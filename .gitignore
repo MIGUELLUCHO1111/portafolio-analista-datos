@@ -3,3 +3,5 @@ __pycache__/
 .env
 ~$*.xlsx
 *.tmp
+06-automatizacion-ia/salida/
+06-automatizacion-ia/registro.log

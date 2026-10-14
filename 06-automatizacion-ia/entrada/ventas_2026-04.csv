@@ -1,0 +1,21 @@
+id,fecha,vendedor_id,producto_id,region,canal,cantidad,precio_unit
+61,2026-04-01,3,108,Sur,Tienda,7,95
+62,2026-04-03,4,105,Este,Online,3,260
+63,2026-04-05,4,105,Este,Tienda,7,260
+64,2026-04-06,2,102,  norte,Tienda,3,320
+65,2026-04-07,4,104,Este,Online,6,85
+66,2026-04-08,4,105,Este,Online,4,260
+67,2026-04-08,6,103,SUR,Online,3,25
+68,2026-04-10,6,104,Sur,Online,3,85
+69,2026-04-10,4,108,Este,Tienda,1,95
+70,2026-04-12,6,103,Sur,Tienda,3,25
+71,2026-04-13,6,110,  sur,Online,2,380
+72,2026-04-14,2,107,Norte,Online,3,210
+73,2026-04-17,4,109,Este,Tienda,7,60
+74,2026-04-19,2,102,Norte,Tienda,2,320
+75,2026-04-20,3,102,Sur,Tienda,3,320
+76,2026-04-20,2,101,Norte,Tienda,1,1200
+77,2026-04-25,5,109,Oeste,Online,6,60
+78,2026-04-25,3,104,  SUR,Tienda,4,85
+79,2026-04-27,4,108,Este,Tienda,1,95
+80,2026-04-27,6,104,Sur,Tienda,6,85

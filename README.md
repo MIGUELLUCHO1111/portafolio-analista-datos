@@ -9,11 +9,14 @@ Cada proyecto responde preguntas reales con la herramienta adecuada y documenta 
 
 | # | Proyecto | Herramientas | Qué demuestra |
 |---|---|---|---|
+| 0 | [Plan de análisis](00-plan-de-analisis/) | Markdown | Preguntas SMART, KPIs, diccionario de datos y bitácora |
 | 1 | [Reporte de ventas en Excel](01-excel-reporte-ventas/) | Excel | Tablas, BUSCARV, SUMAR.SI.CONJUNTO, SI anidado, formato condicional, gráficos |
 | 2 | [Análisis de ventas con SQL](02-sql-analisis-ventas/) | SQL (SQLite) | JOIN, GROUP BY, HAVING, CASE, CTE y funciones de ventana para 10 preguntas de negocio |
 | 3 | [Análisis exploratorio con Python](03-python-analisis-ventas/) | Python, pandas, matplotlib, Jupyter | Limpieza, merge, groupby, pivot_table, gráficos y exportación a Excel |
 | 4 | [APIs y Web Scraping](04-api-y-scraping/) | requests, BeautifulSoup, pandas | Consumo de una API pública, scraping ético con paginación y análisis |
 | 5 | [Dashboard en Power BI](05-powerbi-dashboard/) | Power BI, DAX, Power Query | Modelo estrella, medidas DAX, CALCULATE, inteligencia de tiempo, tema personalizado |
+| 6 | [Automatización e IA](06-automatizacion-ia/) | Python, Programador de tareas | Reporte que se genera solo, validación, registro y biblioteca de prompts |
+| 7 | [Proyecto final](07-proyecto-final/) | Todas | Mi proyecto propio con datos abiertos *(en construcción)* |
 | ★ | [Dashboard web interactivo](docs/) | HTML, JavaScript, Chart.js | Filtros, filtro cruzado y KPIs publicados en la web |
 
 ## Los datos
