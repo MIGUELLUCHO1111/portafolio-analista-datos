@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard de Ventas 2026</title>
+<meta name="description" content="Dashboard interactivo de ventas del primer semestre 2026 · Portafolio de Analista de Datos">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Source+Sans+3:wght@400;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#03050D;--panel:rgba(12,18,40,.78);--line:#26325A;--ink:#E9EEFF;--muted:#9EAAD0;--green:#11A64B;--red:#E3122F;--blue:#1E5BFF;--yel:#FFD21F;
+  --f-d:'Archivo','Segoe UI',sans-serif;--f-b:'Source Sans 3','Segoe UI',sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--f-b);color:var(--ink);background:
+  radial-gradient(900px 500px at 100% -10%,rgba(30,91,255,.25),transparent 60%),
+  radial-gradient(800px 500px at -10% 110%,rgba(17,166,75,.22),transparent 60%),
+  radial-gradient(600px 400px at 60% 50%,rgba(123,60,255,.14),transparent 70%),var(--bg);background-attachment:fixed;min-height:100vh}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:24px 16px 48px;display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;border:1.5px solid var(--yel);border-radius:18px;padding:20px 22px;background:var(--panel);box-shadow:0 0 22px rgba(255,210,31,.3),inset 0 0 40px rgba(255,210,31,.06)}
+h1{font-family:var(--f-d);font-weight:800;text-transform:uppercase;margin:0;font-size:clamp(26px,4vw,40px);letter-spacing:-.01em;text-shadow:0 0 18px rgba(255,210,31,.5)}
+h1 span{color:var(--yel)}
+.sub{color:var(--muted);margin:4px 0 0}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:grid;gap:4px}
+select,button{font:inherit;color:var(--ink);background:#0C1226;border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+button{cursor:pointer;font-weight:700}
+button:hover{border-color:var(--yel)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;border-top:4px solid var(--c);box-shadow:0 0 18px color-mix(in srgb,var(--c) 25%,transparent)}
+.kpi span{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.kpi b{display:block;font-family:var(--f-d);font-size:30px;font-variant-numeric:tabular-nums;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;min-width:0;backdrop-filter:blur(8px)}
+.card h2{font-family:var(--f-d);font-size:14px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px;color:var(--muted)}
+.chart{position:relative;height:260px}
+.hint{font-size:13px;color:var(--muted)}
+.chip{display:inline-block;background:rgba(255,210,31,.12);border:1px solid var(--yel);color:var(--yel);border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.n{text-align:right}
+.tblwrap{overflow-x:auto}
+footer{color:var(--muted);font-size:13px;text-align:center}
+footer a{color:var(--yel)}
+</style>
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<div class="wrap">
+  <header>
+    <div><h1>Ventas <span>2026</span> · Dashboard</h1><p class="sub">Distribuidora de tecnología y oficina · enero a junio · 120 ventas</p></div>
+    <div class="filters">
+      <label>Región <select id="fRegion"></select></label>
+      <label>Canal <select id="fCanal"></select></label>
+      <label>Categoría <select id="fCategoria"></select></label>
+      <label>Mes <select id="fMes"></select></label>
+      <button id="limpiar">Limpiar filtros</button>
+    </div>
+  </header>
+  <p class="hint">Haz clic en una barra para filtrar todo el tablero. <span id="activo"></span></p>
+  <section class="kpis">
+    <div class="kpi" style="--c:var(--yel)"><span>Ingresos</span><b id="kIng">—</b></div>
+    <div class="kpi" style="--c:var(--green)"><span>Margen %</span><b id="kMar">—</b></div>
+    <div class="kpi" style="--c:var(--blue)"><span>N° de ventas</span><b id="kNum">—</b></div>
+    <div class="kpi" style="--c:var(--red)"><span>Ticket promedio</span><b id="kTic">—</b></div>
+  </section>
+  <section class="grid">
+    <div class="card"><h2>Ingreso por región</h2><div class="chart"><canvas id="cRegion"></canvas></div></div>
+    <div class="card"><h2>Ingreso mensual</h2><div class="chart"><canvas id="cMes"></canvas></div></div>
+    <div class="card"><h2>Margen por producto</h2><div class="chart"><canvas id="cProd"></canvas></div></div>
+    <div class="card"><h2>Cumplimiento de meta por vendedor</h2><div class="chart"><canvas id="cVend"></canvas></div></div>
+  </section>
+  <section class="card"><h2>Top 10 ventas</h2><div class="tblwrap"><table id="tTop"></table></div></section>
+  <footer>Proyecto de portafolio · Datos: <code>datos/ventas.csv</code> · Hecho con HTML, JavaScript y Chart.js · <a href="https://github.com/MIGUELLUCHO1111/portafolio-analista-datos">Ver código</a></footer>
+</div>
+<script src="datos.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const fmt = (n, d = 0) => n.toLocaleString('es', { minimumFractionDigits: d, maximumFractionDigits: d });
+const COL = { green: '#11A64B', red: '#E3122F', blue: '#1E5BFF', yel: '#FFD21F', muted: '#9EAAD0', line: '#26325A' };
+const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
+const filtros = { region: '', canal: '', categoria: '', mes: '' };
+const unico = k => [...new Set(VENTAS.map(v => v[k]))];
+const opciones = (id, k, lista) => { $(id).innerHTML = '<option value="">Todas</option>' + lista.map(x => `<option>${x}</option>`).join(''); $(id).onchange = e => { filtros[k] = e.target.value; render(); }; };
+opciones('#fRegion', 'region', unico('region').sort()); opciones('#fCanal', 'canal', unico('canal').sort());
+opciones('#fCategoria', 'categoria', unico('categoria').sort()); opciones('#fMes', 'mes', MESES);
+$('#limpiar').onclick = () => { Object.keys(filtros).forEach(k => filtros[k] = ''); ['#fRegion', '#fCanal', '#fCategoria', '#fMes'].forEach(s => $(s).value = ''); render(); };
+
+Chart.defaults.color = COL.muted; Chart.defaults.borderColor = 'rgba(38,50,90,.6)'; Chart.defaults.font.family = "'Source Sans 3', sans-serif";
+const sumar = (filas, k, v) => filas.reduce((o, f) => (o[f[k]] = (o[f[k]] || 0) + f[v], o), {});
+const charts = {};
+function grafico(id, cfg) { if (charts[id]) { charts[id].data = cfg.data; charts[id].options = cfg.options; charts[id].update(); } else charts[id] = new Chart($(id), cfg); }
+const base = (extra = {}) => ({ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, ...extra });
+
+function render() {
+  const F = VENTAS.filter(v => Object.entries(filtros).every(([k, x]) => !x || v[k] === x));
+  const ing = F.reduce((a, f) => a + f.ingreso, 0), mar = F.reduce((a, f) => a + f.margen, 0);
+  $('#kIng').textContent = '$' + fmt(ing); $('#kMar').textContent = ing ? fmt(mar / ing * 100, 1) + ' %' : '—';
+  $('#kNum').textContent = fmt(F.length); $('#kTic').textContent = F.length ? '$' + fmt(ing / F.length, 2) : '—';
+  const act = Object.entries(filtros).filter(([, x]) => x).map(([k, x]) => `${k}: ${x}`);
+  $('#activo').innerHTML = act.length ? 'Filtros activos: ' + act.map(a => `<span class="chip">${a}</span>`).join(' ') : '';
+
+  const reg = Object.entries(sumar(F, 'region', 'ingreso')).sort((a, b) => b[1] - a[1]);
+  grafico('#cRegion', { type: 'bar', data: { labels: reg.map(r => r[0]), datasets: [{ data: reg.map(r => r[1]), backgroundColor: [COL.green, COL.blue, COL.red, COL.yel], borderRadius: 8 }] },
+    options: base({ onClick: (e, el) => { if (el.length) { const r = reg[el[0].index][0]; filtros.region = filtros.region === r ? '' : r; $('#fRegion').value = filtros.region; render(); } } }) });
+
+  const mes = sumar(F, 'mes', 'ingreso');
+  grafico('#cMes', { type: 'line', data: { labels: MESES, datasets: [{ data: MESES.map(m => mes[m] || 0), borderColor: COL.blue, backgroundColor: 'rgba(30,91,255,.18)', fill: true, tension: .35, pointRadius: 5, pointBackgroundColor: COL.yel }] }, options: base() });
+
+  const prod = Object.entries(sumar(F, 'producto', 'margen')).sort((a, b) => b[1] - a[1]);
+  grafico('#cProd', { type: 'bar', data: { labels: prod.map(p => p[0]), datasets: [{ data: prod.map(p => p[1]), backgroundColor: COL.green, borderRadius: 6 }] }, options: base({ indexAxis: 'y' }) });
+
+  const vend = Object.entries(sumar(F, 'vendedor', 'ingreso')).map(([n, v]) => [n, v / METAS[n] * 100]).sort((a, b) => b[1] - a[1]);
+  grafico('#cVend', { type: 'bar', data: { labels: vend.map(v => v[0]), datasets: [{ data: vend.map(v => v[1]), backgroundColor: vend.map(v => v[1] >= 100 ? COL.green : COL.red), borderRadius: 6 }] },
+    options: base({ scales: { y: { ticks: { callback: v => v + ' %' } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmt(c.raw, 1) + ' % de la meta' } } } }) });
+
+  const top = [...F].sort((a, b) => b.ingreso - a.ingreso).slice(0, 10);
+  $('#tTop').innerHTML = '<thead><tr><th>Fecha</th><th>Región</th><th>Vendedor</th><th>Producto</th><th>Canal</th><th class="n">Cant.</th><th class="n">Ingreso</th></tr></thead><tbody>' +
+    top.map(f => `<tr><td>${f.fecha}</td><td>${f.region}</td><td>${f.vendedor}</td><td>${f.producto}</td><td>${f.canal}</td><td class="n">${f.cantidad}</td><td class="n">$${fmt(f.ingreso)}</td></tr>`).join('') + '</tbody>';
+}
+render();
+
+/* fondo de estrellas */
+(() => {
+  const c = $('#stars'), g = c.getContext('2d'); let W, H, s = [];
+  const size = () => { W = c.width = innerWidth; H = c.height = innerHeight; s = Array.from({ length: Math.round(W * H / 4000) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.4 + .3, t: Math.random() * 6 })); };
+  size(); addEventListener('resize', size);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const f = () => { g.clearRect(0, 0, W, H); for (const p of s) { p.t += .02; g.globalAlpha = .3 + .7 * Math.abs(Math.sin(p.t)); g.fillStyle = '#fff'; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 7); g.fill(); } if (!reduce) requestAnimationFrame(f); };
+  f();
+})();
+</script>
+</body>
+</html>

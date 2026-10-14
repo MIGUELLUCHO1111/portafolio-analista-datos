@@ -1,0 +1,11 @@
+id,nombre,categoria,precio,costo
+101,Laptop Pro 14,Electrónica,1200,900
+102,Monitor 27,Electrónica,320,210
+103,Mouse inalámbrico,Accesorios,25,12
+104,Teclado mecánico,Accesorios,85,50
+105,Silla ergonómica,Oficina,260,150
+106,Escritorio ajustable,Oficina,480,300
+107,Impresora láser,Oficina,210,140
+108,Audífonos BT,Electrónica,95,55
+109,Webcam HD,Accesorios,60,32
+110,Tablet 10,Electrónica,380,270

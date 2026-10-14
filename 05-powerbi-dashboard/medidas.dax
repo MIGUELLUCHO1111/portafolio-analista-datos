@@ -1,0 +1,65 @@
+// =====================================================================
+// Proyecto 5 · Medidas DAX para el dashboard de ventas
+// Créalas en Power BI: Inicio → Nueva medida, una por una.
+// Modelo: ventas (hechos) · productos · vendedores · Calendario
+// =====================================================================
+
+// ---------- Tabla calendario (Modelado → Nueva tabla) ----------
+Calendario =
+ADDCOLUMNS (
+    CALENDAR ( DATE ( 2026, 1, 1 ), DATE ( 2026, 6, 30 ) ),
+    "Año", YEAR ( [Date] ),
+    "MesNum", MONTH ( [Date] ),
+    "Mes", FORMAT ( [Date], "MMM" )
+)
+
+// ---------- Medidas base ----------
+Ingresos = SUMX ( ventas, ventas[cantidad] * ventas[precio_unit] )
+
+Costo = SUMX ( ventas, ventas[cantidad] * RELATED ( productos[costo] ) )
+
+Margen = [Ingresos] - [Costo]
+
+Margen % = DIVIDE ( [Margen], [Ingresos] )
+
+Num Ventas = COUNTROWS ( ventas )
+
+Unidades = SUM ( ventas[cantidad] )
+
+Ticket Promedio = DIVIDE ( [Ingresos], [Num Ventas] )
+
+// ---------- Contexto de filtro con CALCULATE ----------
+Ingresos Online = CALCULATE ( [Ingresos], ventas[canal] = "Online" )
+
+% Online = DIVIDE ( [Ingresos Online], [Ingresos] )
+
+Ingresos Totales = CALCULATE ( [Ingresos], ALL ( ventas ) )
+
+% del Total = DIVIDE ( [Ingresos], [Ingresos Totales] )
+
+// ---------- Metas ----------
+Meta = SUM ( vendedores[meta] )
+
+Cumplimiento % = DIVIDE ( [Ingresos], [Meta] )
+
+Estado Meta =
+SWITCH (
+    TRUE (),
+    [Cumplimiento %] >= 1, "Cumplió",
+    [Cumplimiento %] >= 0.8, "Cerca",
+    "Por debajo"
+)
+
+// ---------- Inteligencia de tiempo (requiere relación Calendario[Date] → ventas[fecha]) ----------
+Ingresos Acumulados = TOTALYTD ( [Ingresos], Calendario[Date] )
+
+Ingresos Mes Anterior = CALCULATE ( [Ingresos], DATEADD ( Calendario[Date], -1, MONTH ) )
+
+Variación vs Mes Anterior % =
+VAR actual = [Ingresos]
+VAR anterior = [Ingresos Mes Anterior]
+RETURN
+    DIVIDE ( actual - anterior, anterior )
+
+// ---------- Ranking ----------
+Ranking Vendedor = RANKX ( ALL ( vendedores[nombre] ), [Ingresos] )

@@ -1,0 +1,32 @@
+{
+  "name": "Galáctico Analista",
+  "dataColors": ["#11A64B", "#1E5BFF", "#E3122F", "#FFD21F", "#3FA2FF", "#4BE08A", "#FF6B7A", "#7B3CFF"],
+  "background": "#060B1E",
+  "foreground": "#E9EEFF",
+  "tableAccent": "#1E5BFF",
+  "good": "#11A64B",
+  "neutral": "#FFD21F",
+  "bad": "#E3122F",
+  "maximum": "#11A64B",
+  "center": "#FFD21F",
+  "minimum": "#E3122F",
+  "textClasses": {
+    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 14, "color": "#FFFFFF" },
+    "label": { "fontFace": "Segoe UI", "fontSize": 10, "color": "#9EAAD0" },
+    "callout": { "fontFace": "Segoe UI Bold", "fontSize": 28, "color": "#FFD21F" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [{ "show": true, "color": { "solid": { "color": "#0C1226" } }, "transparency": 0 }],
+        "border": [{ "show": true, "color": { "solid": { "color": "#26325A" } }, "radius": 12 }],
+        "title": [{ "fontColor": { "solid": { "color": "#FFFFFF" } } }]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#03050D" } }, "transparency": 0 }]
+      }
+    }
+  }
+}
