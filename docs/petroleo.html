@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Petróleo de Noruega</title>
+<meta name="description" content="Producción, declinación y valor de los campos petroleros de Noruega con datos oficiales de Sodir · Portafolio de Analista de Datos">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Source+Sans+3:wght@400;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#03050D;--panel:rgba(12,18,40,.78);--line:#26325A;--ink:#E9EEFF;--muted:#9EAAD0;--green:#11A64B;--red:#E3122F;--blue:#1E5BFF;--yel:#FFD21F;
+  --f-d:'Archivo','Segoe UI',sans-serif;--f-b:'Source Sans 3','Segoe UI',sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--f-b);color:var(--ink);background:
+  radial-gradient(900px 500px at 100% -10%,rgba(255,210,31,.16),transparent 60%),
+  radial-gradient(800px 500px at -10% 110%,rgba(30,91,255,.22),transparent 60%),
+  radial-gradient(600px 400px at 60% 50%,rgba(17,166,75,.10),transparent 70%),var(--bg);background-attachment:fixed;min-height:100vh}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 16px 48px;display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;border:1.5px solid var(--yel);border-radius:18px;padding:20px 22px;background:var(--panel);box-shadow:0 0 22px rgba(255,210,31,.3),inset 0 0 40px rgba(255,210,31,.06)}
+h1{font-family:var(--f-d);font-weight:800;text-transform:uppercase;margin:0;font-size:clamp(24px,4vw,38px);letter-spacing:-.01em;text-shadow:0 0 18px rgba(255,210,31,.5)}
+h1 span{color:var(--yel)}
+.sub{color:var(--muted);margin:4px 0 0;max-width:720px}
+nav a{color:var(--yel);font-weight:700;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:7px 12px;display:inline-block}
+nav a:hover{border-color:var(--yel)}
+.pregunta{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--yel);border-radius:14px;padding:12px 16px;margin:0;font-size:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;border-top:4px solid var(--c);box-shadow:0 0 18px color-mix(in srgb,var(--c) 22%,transparent)}
+.kpi span{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.kpi b{display:block;font-family:var(--f-d);font-size:28px;font-variant-numeric:tabular-nums;margin-top:4px}
+.kpi small{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;min-width:0;backdrop-filter:blur(8px)}
+.card.ancho{grid-column:1/-1}
+.card h2{font-family:var(--f-d);font-size:14px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 4px;color:var(--muted)}
+.card h3{margin:0 0 10px;font-size:17px;font-weight:700}
+.chart{position:relative;height:280px}
+.chart.alto{height:340px}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+select,button,input[type=search]{font:inherit;color:var(--ink);background:#0C1226;border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+button{cursor:pointer;font-weight:700}
+button:hover,button.on{border-color:var(--yel);color:var(--yel)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{background:#0C1226;border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:13px}
+.chip b{color:var(--yel)}
+.badge{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;border:1px solid}
+.badge.confiable{color:var(--green);border-color:var(--green)}
+.badge.moderado{color:var(--yel);border-color:var(--yel)}
+.badge.poco{color:var(--red);border-color:var(--red)}
+.badge.meseta{color:var(--muted);border-color:var(--muted)}
+.ctrl{display:grid;gap:4px;font-size:13px;color:var(--muted);min-width:180px;flex:1}
+.ctrl output{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--yel)}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}
+.res div{background:#0C1226;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.res span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.res b{font-family:var(--f-d);font-size:20px;font-variant-numeric:tabular-nums}
+.vpn{font-family:var(--f-d);font-size:40px;color:var(--green);font-variant-numeric:tabular-nums;margin:4px 0}
+.vpn.neg{color:var(--red)}
+.nota{font-size:13px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:8px 10px;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.n,th.n{text-align:right}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:rgba(255,210,31,.06)}
+.barra{height:8px;background:#0C1226;border-radius:99px;overflow:hidden;min-width:80px}
+.barra i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--yel),var(--red))}
+.tblwrap{overflow-x:auto;max-height:420px;overflow-y:auto}
+.hallazgos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.hallazgos div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.hallazgos b{display:block;color:var(--yel);font-family:var(--f-d);font-size:22px}
+footer{color:var(--muted);font-size:13px;text-align:center;line-height:1.6}
+footer a{color:var(--yel)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Petróleo de <span>Noruega</span> · Producción y valor</h1>
+      <p class="sub" id="sub">Datos oficiales de Sodir y precio del Brent (FRED)</p>
+    </div>
+    <nav><a href="index.html">← Dashboard de ventas</a></nav>
+  </header>
+  <p class="pregunta"><b>Pregunta de negocio:</b> ¿cómo evoluciona la producción del país, qué campos maduros sostienen el valor remanente y cuánto vale su producción futura según el precio del Brent?</p>
+
+  <section class="kpis">
+    <div class="kpi" style="--c:var(--yel)"><span>Producción actual</span><b id="kAct">—</b><small>kbd · promedio 12 meses</small></div>
+    <div class="kpi" style="--c:var(--blue)"><span>Pico histórico</span><b id="kPico">—</b><small id="kPicoA"></small></div>
+    <div class="kpi" style="--c:var(--red)"><span>Corte de agua</span><b id="kAgua">—</b><small id="kAguaR"></small></div>
+    <div class="kpi" style="--c:var(--green)"><span>Reservas remanentes</span><b id="kRes">—</b><small>millones de barriles · todos los campos (oficial)</small></div>
+    <div class="kpi" style="--c:var(--yel)"><span>Brent</span><b id="kBrent">—</b><small>USD/bbl · promedio 12 meses</small></div>
+  </section>
+
+  <section class="hallazgos" id="hallazgos"></section>
+
+  <section class="grid">
+    <div class="card ancho">
+      <h2>Producción nacional de petróleo y precio del Brent</h2>
+      <h3 id="tNac"></h3>
+      <div class="row"><button data-r="0" class="on">Toda la historia</button><button data-r="2000">Desde 2000</button><button data-r="2016">Últimos 10 años</button></div>
+      <div class="chart alto"><canvas id="cNac"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Los 10 campos que más producen hoy</h2>
+      <h3 id="tTop"></h3>
+      <div class="chart"><canvas id="cTop"></canvas></div>
+      <p class="hint">Haz clic en una barra para analizar ese campo abajo.</p>
+    </div>
+    <div class="card">
+      <h2>Madurez de la cuenca: corte de agua</h2>
+      <h3>Más de la mitad del líquido que sale de los pozos ya es agua</h3>
+      <div class="chart"><canvas id="cAgua"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card" id="explorador">
+    <h2>Explorador de campos · curva de declinación de Arps</h2>
+    <div class="row">
+      <input type="search" id="buscar" placeholder="Buscar campo…" list="listaCampos" aria-label="Buscar campo">
+      <datalist id="listaCampos"></datalist>
+      <select id="selCampo" aria-label="Campo"></select>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="row">
+      <label class="ctrl">Inicio del ajuste <output id="oIni"></output><input type="range" id="rIni"></label>
+      <label class="ctrl">Límite económico <output id="oLim"></output><input type="range" id="rLim" min="0.1" max="5" step="0.1" value="0.5"></label>
+      <button id="auto">Ajuste automático</button>
+    </div>
+    <div class="chart alto"><canvas id="cCampo"></canvas></div>
+    <div class="res" id="res"></div>
+    <p class="hint" id="explica"></p>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Simulador económico del campo</h2>
+      <h3 id="tEco"></h3>
+      <div class="row">
+        <label class="ctrl">Brent (USD/bbl) <output id="oPre"></output><input type="range" id="rPre" min="20" max="150" step="1"></label>
+        <label class="ctrl">Costo operativo (USD/bbl) <output id="oOpex"></output><input type="range" id="rOpex" min="2" max="50" step="1" value="15"></label>
+      </div>
+      <div class="row">
+        <label class="ctrl">Impuestos <output id="oImp"></output><input type="range" id="rImp" min="0" max="90" step="1" value="78"></label>
+        <label class="ctrl">Tasa de descuento <output id="oTasa"></output><input type="range" id="rTasa" min="0" max="25" step="1" value="10"></label>
+      </div>
+      <div>Valor presente neto del petróleo pronosticado</div>
+      <div class="vpn" id="vpn">—</div>
+      <div class="res" id="resEco"></div>
+      <p class="nota">Estimación simplificada con fines de aprendizaje: flujo = barriles × (Brent − costo operativo) × (1 − impuestos). No incluye inversiones, gas ni costos de abandono. 78 % es el régimen petrolero noruego (22 % general + 56 % especial).</p>
+    </div>
+    <div class="card">
+      <h2>Flujo de caja descontado acumulado</h2>
+      <h3>Cuánto valor aporta cada año de producción</h3>
+      <div class="chart"><canvas id="cFlujo"></canvas></div>
+      <h2 style="margin-top:12px">Sensibilidad al precio</h2>
+      <div class="chart" style="height:200px"><canvas id="cSens"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Dónde queda el petróleo · reservas remanentes oficiales</h2>
+    <h3 id="tRes"></h3>
+    <div class="tblwrap"><table id="tabla"></table></div>
+    <p class="hint">Avance = petróleo ya producido sobre el total recuperable. Haz clic en una fila para analizar el campo.</p>
+  </section>
+
+  <footer>
+    Proyecto de aprendizaje en análisis de datos · <a href="https://github.com/MIGUELLUCHO1111/portafolio-analista-datos/tree/main/07-proyecto-final">Ver código y notebook</a><br>
+    Datos: <a href="https://factpages.sodir.no">Sodir FactPages</a> (licencia NLOD) y <a href="https://fred.stlouisfed.org/series/POILBREUSDM">FRED · POILBREUSDM</a> · Se actualizan cada mes con <code>actualizar_datos.py</code><br>
+    Hecho con Python, HTML, JavaScript y Chart.js
+  </footer>
+</div>
+<script src="petroleo_datos.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const fmt = (n, d = 0) => (n ?? 0).toLocaleString('es', { minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: 'always' });
+const COL = { green: '#11A64B', red: '#E3122F', blue: '#1E5BFF', yel: '#FFD21F', muted: '#9EAAD0' };
+Chart.defaults.color = COL.muted; Chart.defaults.borderColor = 'rgba(38,50,90,.6)'; Chart.defaults.font.family = "'Source Sans 3', sans-serif";
+const charts = {};
+function grafico(id, cfg) { if (charts[id]) { charts[id].data = cfg.data; charts[id].options = cfg.options; charts[id].update(); } else charts[id] = new Chart($(id), cfg); }
+const base = (extra = {}) => ({ responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false } }, ...extra });
+
+/* ---------- fechas ---------- */
+const meses = (ini, n) => { let [y, m] = ini.split('-').map(Number); return Array.from({ length: n }, () => { const s = `${y}-${String(m).padStart(2, '0')}`; if (++m > 12) { m = 1; y++; } return s; }); };
+const DIAS = s => { const [y, m] = s.split('-').map(Number); return Date.UTC(y, m - 1, 1) / 864e5; };
+const etiqueta = s => { const M = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']; const [y, m] = s.split('-'); return `${M[m - 1]} ${y}`; };
+
+/* ---------- Arps (mismo método que petro.py) ---------- */
+const arps = (t, qi, di, b) => b < 1e-6 ? qi * Math.exp(-di * t) : qi / Math.pow(1 + b * di * t, 1 / b);
+function ajustar(t, q) {
+  const T = [], L = [];
+  t.forEach((x, i) => { if (q[i] > 0) { T.push(x); L.push(Math.log(q[i])); } });
+  const media = L.reduce((a, x) => a + x, 0) / L.length;
+  let mejor = null;
+  for (let k = 0; k <= 20; k++) {
+    const b = k * 0.05;
+    for (let j = 0; j < 80; j++) {
+      const di = 0.01 * Math.pow(200, j / 79);
+      const lf = T.map(x => Math.log(arps(x, 1, di, b)));
+      const lqi = L.reduce((a, x, i) => a + x - lf[i], 0) / L.length;
+      const sse = L.reduce((a, x, i) => a + (x - lqi - lf[i]) ** 2, 0);
+      if (!mejor || sse < mejor.sse) mejor = { sse, qi: Math.exp(lqi), di, b };
+    }
+  }
+  const sst = L.reduce((a, x) => a + (x - media) ** 2, 0);
+  return { ...mejor, r2: 1 - mejor.sse / sst };
+}
+const calidad = r2 => r2 >= 0.6 ? 'confiable' : r2 >= 0.3 ? 'moderado' : 'poco confiable';
+function ventanaAuto(c) {
+  const n = c.o.length, desde = Math.max(0, n - 120), o = c.o.slice(desde);
+  const s = o.map((_, i) => { const v = o.slice(Math.max(0, i - 1), i + 2); return v.reduce((a, x) => a + x, 0) / v.length; });
+  const max = Math.max(...s), pico = s.indexOf(max);
+  const ult = o.slice(-12).reduce((a, x) => a + x, 0) / Math.min(12, o.length);
+  return { inicio: desde + pico, meseta: o.length - pico < 24 || ult / max > 0.85 };
+}
+function vpnFlujo(q, precio, opex, imp, tasa) {
+  let acum = 0; const anual = [];
+  q.forEach((x, i) => { acum += x * 1000 * 30.4375 * (precio - opex) * (1 - imp) / 1e6 / Math.pow(1 + tasa, (i + 1) / 12); if ((i + 1) % 12 === 0 || i === q.length - 1) anual.push(acum); });
+  return { vpn: acum, anual };
+}
+
+/* ---------- serie nacional y KPIs ---------- */
+const NF = meses(NAC.ini, NAC.petroleo.length);
+const anual = {}; NF.forEach((f, i) => { const y = f.slice(0, 4); (anual[y] ??= []).push(NAC.petroleo[i]); });
+const prom = Object.fromEntries(Object.entries(anual).map(([y, v]) => [y, v.reduce((a, x) => a + x, 0) / v.length]));
+const anioPico = Object.entries(prom).sort((a, b) => b[1] - a[1])[0];
+const act = NAC.petroleo.slice(-12).reduce((a, x) => a + x, 0) / 12;
+const corte12 = NAC.corte.slice(-12).reduce((a, x) => a + x, 0) / 12;
+const remTotal = META.rem_total;
+const minPost = Object.entries(prom).filter(([y]) => y > anioPico[0] && y < META.actualizado.slice(0, 4)).sort((a, b) => a[1] - b[1])[0];
+const activos = CAMPOS.filter(c => c.actual > 0), top10 = activos.slice(0, 10), totAct = activos.reduce((a, c) => a + c.actual, 0);
+const top2 = (top10[0].actual + top10[1].actual) / totAct;
+
+$('#sub').textContent = `${META.campos} campos de la plataforma continental noruega · producción mensual desde 1971 hasta ${etiqueta(META.actualizado)} · datos oficiales de Sodir y Brent de FRED`;
+$('#kAct').textContent = fmt(act); $('#kPico').textContent = fmt(anioPico[1]); $('#kPicoA').textContent = `kbd · promedio del año ${anioPico[0]}`;
+$('#kAgua').textContent = fmt(corte12 * 100, 0) + ' %'; $('#kAguaR').textContent = `${fmt(corte12 / (1 - corte12), 1)} bbl de agua por bbl de petróleo`;
+$('#kRes').textContent = fmt(remTotal); $('#kBrent').textContent = '$' + fmt(META.brent_12m, 0);
+$('#tNac').textContent = `Tocó techo en ${anioPico[0]}, cayó ${fmt((1 - minPost[1] / anioPico[1]) * 100)} % hasta ${minPost[0]} y volvió a subir con campos nuevos`;
+$('#tTop').textContent = `${top10[0].n} y ${top10[1].n} concentran el ${fmt(top2 * 100)} % de la producción`;
+$('#hallazgos').innerHTML = [
+  [`${fmt((1 - minPost[1] / anioPico[1]) * 100)} %`, `cayó la producción entre ${anioPico[0]} y ${minPost[0]}: cuenca madura`],
+  [`${fmt(top2 * 100)} %`, `del petróleo sale de solo 2 campos: riesgo concentrado`],
+  [`${fmt(corte12 * 100)} %`, 'del líquido producido es agua: manejarla es parte del costo'],
+  [`$${fmt(remTotal * META.brent_12m / 1000)} mil M`, 'de ingreso bruto en reservas remanentes, al Brent actual'],
+].map(([b, t]) => `<div><b>${b}</b>${t}</div>`).join('');
+
+let rango = 0;
+function dibujarNacional() {
+  const i0 = rango ? NF.findIndex(f => f >= String(rango)) : 0;
+  grafico('#cNac', { type: 'line', data: { labels: NF.slice(i0).map(etiqueta), datasets: [
+    { label: 'Petróleo (kbd)', data: NAC.petroleo.slice(i0), borderColor: COL.blue, backgroundColor: 'rgba(30,91,255,.22)', fill: true, pointRadius: 0, borderWidth: 1.5, yAxisID: 'y' },
+    { label: 'Brent (USD/bbl)', data: NAC.brent.slice(i0), borderColor: COL.yel, pointRadius: 0, borderWidth: 1.5, yAxisID: 'y2', spanGaps: true }] },
+    options: base({ plugins: { legend: { display: true } }, scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { title: { display: true, text: 'kbd' } }, y2: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'USD/bbl' } } } }) });
+}
+document.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { rango = +b.dataset.r; document.querySelectorAll('[data-r]').forEach(x => x.classList.toggle('on', x === b)); dibujarNacional(); });
+dibujarNacional();
+
+grafico('#cTop', { type: 'bar', data: { labels: top10.map(c => c.n), datasets: [{ data: top10.map(c => c.actual), backgroundColor: top10.map((_, i) => i < 2 ? COL.yel : COL.green), borderRadius: 6 }] },
+  options: base({ indexAxis: 'y', interaction: { mode: 'nearest', intersect: true }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmt(c.raw, 1) + ' kbd' } } },
+    onClick: (e, el) => { if (el.length) { elegir(top10[el[0].index].n); $('#explorador').scrollIntoView({ behavior: 'smooth' }); } } }) });
+
+const anios = Object.keys(anual).filter(y => y >= 1980);
+const corteAnual = anios.map(y => { const v = NF.map((f, i) => f.startsWith(y) ? NAC.corte[i] : null).filter(x => x != null); return v.reduce((a, x) => a + x, 0) / v.length * 100; });
+grafico('#cAgua', { type: 'line', data: { labels: anios, datasets: [{ data: corteAnual, borderColor: COL.red, backgroundColor: 'rgba(227,18,47,.15)', fill: true, pointRadius: 0, tension: .3 }] },
+  options: base({ scales: { y: { min: 0, max: 100, ticks: { callback: v => v + ' %' } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmt(c.raw, 1) + ' % de agua' } } } }) });
+
+/* ---------- explorador ---------- */
+const porNombre = Object.fromEntries(CAMPOS.map(c => [c.n, c]));
+$('#selCampo').innerHTML = CAMPOS.map(c => `<option>${c.n}</option>`).join('');
+$('#listaCampos').innerHTML = CAMPOS.map(c => `<option value="${c.n}">`).join('');
+$('#buscar').oninput = e => { const c = CAMPOS.find(x => x.n.toLowerCase() === e.target.value.toLowerCase()); if (c) elegir(c.n); };
+$('#selCampo').onchange = e => elegir(e.target.value);
+let campo, fechas, inicio, pron = [], estado = '';
+const ESTADOS = { 'Producing': 'Produciendo', 'Shut down': 'Cerrado', 'Approved for production': 'Aprobado para producir' };
+const TIPOS = { 'OIL': 'petróleo', 'GAS': 'gas', 'OIL/GAS': 'petróleo y gas', 'GAS/CONDENSATE': 'gas y condensado' };
+
+function elegir(nombre, ini) {
+  campo = porNombre[nombre]; $('#selCampo').value = nombre;
+  fechas = meses(campo.ini, campo.o.length);
+  const w = ventanaAuto(campo);
+  inicio = ini ?? w.inicio; estado = ini == null && w.meseta ? 'meseta' : '';
+  $('#rIni').min = 0; $('#rIni').max = Math.max(0, campo.o.length - 12); $('#rIni').value = Math.min(inicio, $('#rIni').max);
+  const avance = campo.rec ? (1 - campo.rem / campo.rec) * 100 : null;
+  $('#chips').innerHTML = [['Operador', campo.op], ['Estado', ESTADOS[campo.est] || campo.est], ['Tipo', TIPOS[campo.tipo] || campo.tipo.toLowerCase()], ['Descubierto', campo.desc ?? '—'],
+    ['Producido', fmt(campo.acum) + ' MMbbl'], ['Remanente oficial', fmt(campo.rem, 1) + ' MMbbl'], ['Avance', avance == null ? '—' : fmt(avance) + ' %']]
+    .map(([k, v]) => `<span class="chip">${k}: <b>${v}</b></span>`).join('');
+  calcular();
+}
+function calcular() {
+  inicio = +$('#rIni').value; const lim = +$('#rLim').value;
+  $('#oIni').textContent = etiqueta(fechas[inicio]); $('#oLim').textContent = fmt(lim, 1) + ' kbd';
+  const tramo = campo.o.slice(inicio), d0 = DIAS(fechas[inicio]);
+  const t = fechas.slice(inicio).map(f => (DIAS(f) - d0) / 365.25);
+  let a = null; pron = [];
+  if (tramo.filter(x => x > 0).length >= 6) {
+    a = ajustar(t, tramo);
+    const t0 = t[t.length - 1];
+    for (let k = 1; k <= 300; k++) { const q = arps(t0 + k / 12, a.qi, a.di, a.b); if (q < lim) break; pron.push(q); }
+  }
+  const futuras = meses(fechas[fechas.length - 1], pron.length + 1).slice(1);
+  const labels = [...fechas, ...futuras];
+  const ajusteSerie = labels.map((_, i) => a && i >= inicio && i < fechas.length ? arps(t[i - inicio], a.qi, a.di, a.b) : null);
+  const pronSerie = labels.map((_, i) => i >= fechas.length ? pron[i - fechas.length] : i === fechas.length - 1 && pron.length ? campo.o[i] : null);
+  grafico('#cCampo', { type: 'line', data: { labels: labels.map(etiqueta), datasets: [
+    { label: 'Producción real (kbd)', data: campo.o, borderColor: COL.muted, backgroundColor: 'rgba(158,170,208,.12)', fill: true, pointRadius: 0, borderWidth: 1 },
+    { label: 'Ajuste de Arps', data: ajusteSerie, borderColor: COL.blue, pointRadius: 0, borderWidth: 2.5 },
+    { label: 'Pronóstico', data: pronSerie, borderColor: COL.red, borderDash: [6, 4], pointRadius: 0, borderWidth: 2.5 }] },
+    options: base({ plugins: { legend: { display: true }, tooltip: { callbacks: { label: c => c.raw == null ? null : `${c.dataset.label}: ${fmt(c.raw, 1)}` } } }, scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { min: 0, title: { display: true, text: 'kbd' } } } }) });
+
+  const remCurva = pron.reduce((s, q) => s + q, 0) * 30.4375 / 1000;
+  const cal = a ? calidad(a.r2) : 'poco confiable';
+  const clase = estado === 'meseta' ? 'meseta' : cal === 'poco confiable' ? 'poco' : cal;
+  $('#res').innerHTML = a ? [
+    ['Calidad del ajuste', `<span class="badge ${clase}">${estado === 'meseta' ? 'en meseta' : cal}</span>`], ['R²', fmt(a.r2, 2)],
+    ['Declinación inicial', fmt(a.di * 100, 1) + ' %/año'], ['Exponente b', fmt(a.b, 2)],
+    ['Remanente según curva', fmt(remCurva, 1) + ' MMbbl'], ['Remanente oficial', fmt(campo.rem, 1) + ' MMbbl'],
+    ['Años de vida (máx. 25)', fmt(pron.length / 12, 1)]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('') : '<div><span>Sin datos suficientes</span><b>—</b></div>';
+  $('#explica').textContent = estado === 'meseta'
+    ? 'Este campo sigue en meseta o creciendo: la curva de declinación todavía no aplica. Mueve el inicio del ajuste para probar otros tramos.'
+    : `La curva se ajusta desde ${etiqueta(fechas[inicio])}. Si el remanente de la curva difiere mucho del oficial, lo normal es que el campo reciba pozos nuevos o que el operador planee cerrarlo antes del límite económico.`;
+  economia();
+}
+['#rIni', '#rLim'].forEach(s => $(s).oninput = () => { estado = ''; calcular(); });
+$('#auto').onclick = () => elegir(campo.n);
+
+/* ---------- economía ---------- */
+$('#rPre').value = Math.round(META.brent_12m);
+function economia() {
+  const pre = +$('#rPre').value, opex = +$('#rOpex').value, imp = +$('#rImp').value / 100, tasa = +$('#rTasa').value / 100;
+  $('#oPre').textContent = '$' + pre; $('#oOpex').textContent = '$' + opex; $('#oImp').textContent = fmt(imp * 100) + ' %'; $('#oTasa').textContent = fmt(tasa * 100) + ' %';
+  $('#tEco').textContent = `${campo.n}: valor de ${fmt(pron.length / 12, 1)} años de producción pronosticada`;
+  const { vpn, anual } = vpnFlujo(pron, pre, opex, imp, tasa);
+  $('#vpn').textContent = (vpn < 0 ? '−' : '') + '$' + fmt(Math.abs(vpn)) + ' M'; $('#vpn').classList.toggle('neg', vpn < 0);
+  const barriles = pron.reduce((s, q) => s + q, 0) * 30.4375 / 1000;
+  const equilibrio = opex;
+  $('#resEco').innerHTML = [['Barriles por producir', fmt(barriles, 1) + ' MM'], ['Ingreso bruto', '$' + fmt(barriles * pre) + ' M'], ['Precio de equilibrio', '$' + fmt(equilibrio) + '/bbl'], ['Valor por barril', barriles ? '$' + fmt(vpn / barriles, 2) : '—']]
+    .map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('');
+  const y0 = +fechas[fechas.length - 1].slice(0, 4);
+  grafico('#cFlujo', { type: 'bar', data: { labels: anual.map((_, i) => y0 + i + 1), datasets: [{ data: anual, backgroundColor: anual.map(v => v >= 0 ? COL.green : COL.red), borderRadius: 4 }] },
+    options: base({ plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '$' + fmt(c.raw) + ' M acumulado' } } }, scales: { y: { ticks: { callback: v => '$' + fmt(v) + ' M' } } } }) });
+  const precios = Array.from({ length: 27 }, (_, i) => 20 + i * 5);
+  grafico('#cSens', { type: 'line', data: { labels: precios.map(p => '$' + p), datasets: [
+    { data: precios.map(p => vpnFlujo(pron, p, opex, imp, tasa).vpn), borderColor: COL.yel, pointRadius: precios.map(p => Math.abs(p - pre) < 2.5 ? 6 : 0), pointBackgroundColor: COL.yel, tension: .2 }] },
+    options: base({ plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => 'VPN $' + fmt(c.raw) + ' M' } } }, scales: { y: { ticks: { callback: v => '$' + fmt(v) } } } }) });
+}
+['#rPre', '#rOpex', '#rImp', '#rTasa'].forEach(s => $(s).oninput = economia);
+
+/* ---------- tabla de reservas ---------- */
+const conRes = CAMPOS.filter(c => c.rem > 0).sort((a, b) => b.rem - a.rem);
+const top5 = conRes.slice(0, 5).reduce((a, c) => a + c.rem, 0) / remTotal;
+$('#tRes').textContent = `Los 5 campos con más reservas guardan el ${fmt(top5 * 100)} % del petróleo que queda`;
+$('#tabla').innerHTML = '<thead><tr><th>Campo</th><th>Operador</th><th>Estado</th><th class="n">Remanente (MMbbl)</th><th class="n">Producido (MMbbl)</th><th>Avance</th></tr></thead><tbody>' +
+  conRes.map(c => { const av = c.rec ? Math.max(0, Math.min(100, (1 - c.rem / c.rec) * 100)) : 0; return `<tr data-n="${c.n}"><td><b>${c.n}</b></td><td>${c.op}</td><td>${ESTADOS[c.est] || c.est}</td><td class="n">${fmt(c.rem, 1)}</td><td class="n">${fmt(c.acum, 1)}</td><td><div class="barra" title="${fmt(av)} %"><i style="width:${av}%"></i></div></td></tr>`; }).join('') + '</tbody>';
+$('#tabla').onclick = e => { const tr = e.target.closest('tr[data-n]'); if (tr) { elegir(tr.dataset.n); $('#explorador').scrollIntoView({ behavior: 'smooth' }); } };
+
+elegir(porNombre['Gullfaks'] ? 'Gullfaks' : CAMPOS[0].n);
+</script>
+</body>
+</html>

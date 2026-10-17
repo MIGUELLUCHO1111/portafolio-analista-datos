@@ -3,7 +3,7 @@
 Proyectos prácticos de análisis de datos: de los datos crudos a decisiones de negocio.
 Cada proyecto responde preguntas reales con la herramienta adecuada y documenta los hallazgos.
 
-**[Ver el dashboard interactivo](https://miguellucho1111.github.io/portafolio-analista-datos/)** · Construido con HTML, JavaScript y Chart.js, publicado con GitHub Pages.
+**[Ver el dashboard de ventas](https://miguellucho1111.github.io/portafolio-analista-datos/)** · **[Ver el dashboard petrolero](https://miguellucho1111.github.io/portafolio-analista-datos/petroleo.html)** · Construido con HTML, JavaScript y Chart.js, publicado con GitHub Pages.
 
 ## Proyectos
 
@@ -16,7 +16,7 @@ Cada proyecto responde preguntas reales con la herramienta adecuada y documenta 
 | 4 | [APIs y Web Scraping](04-api-y-scraping/) | requests, BeautifulSoup, pandas | Consumo de una API pública, scraping ético con paginación y análisis |
 | 5 | [Dashboard en Power BI](05-powerbi-dashboard/) | Power BI, DAX, Power Query | Modelo estrella, medidas DAX, CALCULATE, inteligencia de tiempo, tema personalizado |
 | 6 | [Automatización e IA](06-automatizacion-ia/) | Python, Programador de tareas | Reporte que se genera solo, validación, registro y biblioteca de prompts |
-| 7 | [Proyecto final](07-proyecto-final/) | Todas | Mi proyecto propio con datos abiertos *(en construcción)* |
+| 7 | [Petróleo de Noruega: producción y valor](07-proyecto-final/) | Python, pandas, numpy, Chart.js | Datos oficiales de Sodir, curvas de declinación de Arps, VPN y [dashboard petrolero](https://miguellucho1111.github.io/portafolio-analista-datos/petroleo.html) |
 | ★ | [Dashboard web interactivo](docs/) | HTML, JavaScript, Chart.js | Filtros, filtro cruzado y KPIs publicados en la web |
 
 ## Los datos
