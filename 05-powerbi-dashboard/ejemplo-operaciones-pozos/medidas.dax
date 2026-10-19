@@ -1,0 +1,83 @@
+// Ejemplo de Power BI · Operaciones de pozos
+// Tablas: Hecho_Produccion, Dim_Pozo, Dim_Precio, Metas y Calendario
+
+// ---------- Tabla calculada (Modelado → Nueva tabla) ----------
+Calendario =
+ADDCOLUMNS (
+    CALENDAR ( DATE ( 2026, 1, 1 ), DATE ( 2026, 9, 30 ) ),
+    "Mes", STARTOFMONTH ( [Date] ),
+    "DiasMes", DAY ( EOMONTH ( [Date], 0 ) )
+)
+
+// ---------- Medidas (crearlas en este orden) ----------
+Producción (bbl) =
+SUM ( Hecho_Produccion[petroleo_bbl] )
+
+Días del periodo =
+SUMX (
+    VALUES ( Calendario[Mes] ),
+    CALCULATE ( MAX ( Hecho_Produccion[dias_mes] ) )
+)
+
+Tasa (bbl/d) =
+DIVIDE ( [Producción (bbl)], [Días del periodo] )
+
+Plan (bbl) =
+SUMX (
+    Metas,
+    Metas[meta_bbl_d] * RELATED ( Calendario[DiasMes] )
+)
+
+Cumplimiento % =
+DIVIDE ( [Producción (bbl)], [Plan (bbl)] )
+
+Corte de agua % =
+VAR agua = SUM ( Hecho_Produccion[agua_bbl] )
+VAR petroleo = [Producción (bbl)]
+RETURN DIVIDE ( agua, agua + petroleo )
+
+Disponibilidad % =
+DIVIDE (
+    SUM ( Hecho_Produccion[dias_operativos] ),
+    SUM ( Hecho_Produccion[dias_mes] )
+)
+
+Ingresos (USD) =
+SUMX (
+    Hecho_Produccion,
+    Hecho_Produccion[petroleo_bbl]
+        * RELATED ( Dim_Precio[precio_realizado_usd] )
+)
+
+OPEX (USD) =
+SUM ( Hecho_Produccion[opex_usd] )
+
+Costo por barril =
+DIVIDE ( [OPEX (USD)], [Producción (bbl)] )
+
+Margen operativo =
+[Ingresos (USD)] - [OPEX (USD)]
+
+Var % vs mes anterior =
+VAR actual = [Producción (bbl)]
+VAR anterior =
+    CALCULATE (
+        [Producción (bbl)],
+        DATEADD ( Calendario[Date], -1, MONTH )
+    )
+RETURN DIVIDE ( actual - anterior, anterior )
+
+Ranking del pozo =
+RANKX (
+    ALL ( Dim_Pozo[pozo_id] ),
+    [Tasa (bbl/d)]
+)
+
+// Formato condicional del cumplimiento (úsalo en "Color de fuente → Valor del campo")
+Color cumplimiento =
+SWITCH (
+    TRUE (),
+    [Cumplimiento %] >= 1, "#22B866",
+    [Cumplimiento %] >= 0.95, "#FFB020",
+    "#FF3B4E"
+)

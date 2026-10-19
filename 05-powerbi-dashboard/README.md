@@ -1,6 +1,10 @@
 # Proyecto 5 · Dashboard en Power BI
 
-Este proyecto lo construyes tú en **Power BI Desktop** siguiendo la guía. Aquí tienes todo lo necesario:
+Este proyecto lo construyes tú en **Power BI Desktop** siguiendo la guía.
+
+> 🔎 **¿Quieres ver primero cómo queda un reporte terminado?** Mira el [ejemplo de operaciones de pozos](ejemplo-operaciones-pozos/) · [abrir el reporte interactivo](https://miguellucho1111.github.io/portafolio-analista-datos/ejemplo-powerbi/).
+
+Aquí tienes todo lo necesario:
 
 - `medidas.dax` · todas las medidas listas para copiar
 - `tema_galactico.json` · tema de colores personalizado

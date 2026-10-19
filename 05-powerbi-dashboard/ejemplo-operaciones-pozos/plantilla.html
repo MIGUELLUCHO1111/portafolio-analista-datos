@@ -1,0 +1,690 @@
+<title>Operaciones de Pozos · Power BI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: lienzo de reporte de Power BI (cinta superior, segmentadores, páginas abajo) sobre fondo galáctico. Tema oscuro único, elegido a propósito. */
+:root{
+  --bg:#050812; --panel:#0C1224; --panel-2:#111A33; --line:#22305A; --grid:rgba(158,170,208,.13);
+  --ink:#E9EEFF; --muted:#9EAAD0; --faint:#6C7AA6;
+  --c1:#3D8BFF; --c2:#C08600; --c3:#0A8452;      /* Aurora, Orión, Vega (validados para daltonismo) */
+  --plan:#E9EEFF; --accent:#FFD21F;               /* amarillo fuerte: selección y foco */
+  --good:#22B866; --warn:#FFB020; --crit:#FF3B4E; /* estados: siempre con ícono y texto */
+  --f-d:'Archivo','Segoe UI',system-ui,sans-serif; --f-b:'Source Sans 3','Segoe UI',system-ui,sans-serif; --f-m:'JetBrains Mono',Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:radial-gradient(1000px 520px at 105% -10%,rgba(61,139,255,.18),transparent 60%),radial-gradient(800px 480px at -10% 110%,rgba(10,132,82,.16),transparent 60%),var(--bg);color:var(--ink);font:15px/1.45 var(--f-b);min-height:100%}
+.app{max-width:1360px;margin:0 auto;padding-block:14px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:12px}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Cinta */
+.ribbon{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;justify-content:space-between;border:1px solid var(--line);border-radius:10px;background:linear-gradient(90deg,rgba(255,210,31,.10),rgba(12,18,36,.9) 40%);padding:10px 14px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{display:grid;grid-template-columns:repeat(3,6px);align-items:end;gap:2px;height:24px}
+.logo i{display:block;background:var(--accent);border-radius:1px}
+.logo i:nth-child(1){height:10px;opacity:.6}.logo i:nth-child(2){height:17px;opacity:.8}.logo i:nth-child(3){height:24px}
+.brand h1{margin:0;font:800 clamp(15px,2.2vw,19px)/1.15 var(--f-d);letter-spacing:.06em;text-transform:uppercase;text-wrap:balance}
+.brand small{display:block;color:var(--muted);font:500 12px var(--f-m);letter-spacing:.02em}
+.ribbon .meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tag{font:600 11px var(--f-d);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.tag.hot{color:var(--accent);border-color:rgba(255,210,31,.45)}
+
+/* Segmentadores */
+.slicers{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 14px}
+.sl{display:grid;gap:4px}
+.sl label,.sl .lb{font:700 10.5px var(--f-d);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{border:1px solid var(--line);background:var(--panel-2);border-radius:7px;padding:5px 11px;cursor:pointer;display:flex;align-items:center;gap:7px;font-weight:600}
+.seg button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:rgba(255,210,31,.08)}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
+select{background:var(--panel-2);border:1px solid var(--line);border-radius:7px;padding:5px 8px}
+.chip{display:flex;align-items:center;gap:8px;border:1px solid var(--accent);border-radius:999px;padding:4px 6px 4px 12px;font-weight:700;background:rgba(255,210,31,.08)}
+.chip button{border:0;background:transparent;cursor:pointer;color:var(--accent);font-weight:800;padding:0 6px}
+.reset{margin-left:auto;border:1px solid var(--line);background:transparent;border-radius:7px;padding:6px 12px;cursor:pointer;color:var(--muted)}
+.reset:hover{color:var(--ink);border-color:var(--muted)}
+
+/* Lienzo */
+.canvas{display:grid;gap:12px}
+.page{display:grid;gap:12px}
+.row{display:grid;gap:12px;grid-template-columns:repeat(12,minmax(0,1fr))}
+.s12{grid-column:span 12}.s8{grid-column:span 8}.s7{grid-column:span 7}.s6{grid-column:span 6}.s5{grid-column:span 5}.s4{grid-column:span 4}
+@media (max-width:980px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}}
+.vis{min-width:0;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:12px 14px 14px;position:relative;display:grid;gap:8px;align-content:start}
+.vis:hover{border-color:#2F4078}
+.vh{display:flex;gap:10px;align-items:start;justify-content:space-between}
+.vh h2{margin:0;font:700 12.5px/1.3 var(--f-d);letter-spacing:.1em;text-transform:uppercase;text-wrap:balance}
+.vh p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend .ln{width:16px;border-top:2px dashed var(--plan)}
+.chart{width:100%;min-width:0;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.ax{fill:var(--muted);font:12px var(--f-b)}
+.ax-t{fill:var(--faint);font:600 10.5px var(--f-d);letter-spacing:.08em;text-transform:uppercase}
+.gl{stroke:var(--grid)}
+.lbl{fill:var(--ink);font:600 12px var(--f-b)}
+.hit{fill:transparent;cursor:pointer}
+.dim{opacity:.28}
+
+/* DAX en cada visual */
+details.dax{flex:none}
+details.dax summary{list-style:none;cursor:pointer;font:600 11px var(--f-m);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--accent)}
+details.dax summary::-webkit-details-marker{display:none}
+details.dax[open] summary{background:rgba(255,210,31,.1)}
+details.dax .pop{position:absolute;right:12px;top:42px;z-index:5;width:min(460px,calc(100% - 24px));background:#0A1020;border:1px solid rgba(255,210,31,.45);border-radius:10px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.55);display:grid;gap:10px}
+pre.code{margin:0;font:12.5px/1.55 var(--f-m);white-space:pre-wrap;word-break:break-word;color:#CFE0FF;background:rgba(61,139,255,.07);border:1px solid var(--line);border-radius:8px;padding:10px}
+.code .k{color:var(--accent);font-weight:600}.code .m{color:#7FD1FF}.code .c{color:var(--faint);font-style:italic}.code .n{color:#FF9DA8}
+.pop p{margin:0;font-size:13px;color:var(--muted)}
+
+/* Tarjetas KPI */
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.kpi{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:12px 14px;display:grid;gap:4px;min-width:0}
+.kpi .t{font:700 10.5px var(--f-d);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.kpi .v{font:800 clamp(24px,3vw,30px)/1.05 var(--f-d);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .v small{font-size:.5em;color:var(--muted);font-weight:600;margin-left:3px}
+.kpi .d{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+.kpi svg{width:100%;height:34px;display:block}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 8px;font:700 11.5px var(--f-b);border:1px solid currentColor}
+.good{color:var(--good)}.warn{color:var(--warn)}.crit{color:var(--crit)}
+
+/* Narrativa */
+.story{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.story li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:14.5px}
+.story li b{color:var(--ink)}
+.story .ic{font:800 13px var(--f-d);width:22px;height:22px;border-radius:6px;display:grid;place-items:center;border:1px solid currentColor}
+
+/* Matriz */
+.tbl-wrap{overflow-x:auto;border-radius:8px}
+table.mx{border-collapse:separate;border-spacing:0;width:100%;min-width:860px;font-variant-numeric:tabular-nums;font-size:13px}
+.mx th,.mx td{padding:6px 8px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+.mx th{font:700 10.5px var(--f-d);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);position:sticky;top:0;background:var(--panel)}
+.mx th:first-child,.mx td:first-child{text-align:left;position:sticky;left:0;background:var(--panel);z-index:1}
+.mx tr.grp td{font-weight:700;background:var(--panel-2)}
+.mx tr.grp td:first-child{background:var(--panel-2)}
+.mx tr.tot td{font-weight:800;border-top:2px solid var(--muted)}
+.mx tbody tr.pz{cursor:pointer}
+.mx tbody tr.pz:hover td{background-color:rgba(255,210,31,.06)}
+.mx tr.sel td{box-shadow:inset 0 1px 0 var(--accent),inset 0 -1px 0 var(--accent)}
+.bar-cell{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.bar-cell i{display:block;height:8px;border-radius:0 3px 3px 0;background:var(--muted);opacity:.55}
+
+/* Modelo */
+.model svg{min-width:640px}
+.model .tb rect.h{fill:var(--panel-2)}
+.mtxt{fill:var(--ink);font:600 12.5px var(--f-b)}.mtt{fill:var(--accent);font:700 12px var(--f-d);letter-spacing:.06em}.mfd{fill:var(--muted);font:12px var(--f-m)}
+.measures{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr))}
+.ms{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:12px 14px;display:grid;gap:8px;min-width:0}
+.ms header{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ms h3{margin:0;font:700 13px var(--f-d);letter-spacing:.06em;text-transform:uppercase}
+.ms .now{font:700 15px var(--f-m);color:var(--accent);font-variant-numeric:tabular-nums}
+.ms p{margin:0;font-size:13.5px;color:var(--muted)}
+.steps{margin:0;padding-left:20px;display:grid;gap:8px;max-width:75ch}
+.steps code,.ms code{font:12.5px var(--f-m);color:#CFE0FF;background:rgba(61,139,255,.1);border-radius:4px;padding:1px 5px}
+a{color:#7FB2FF}
+
+/* Pestañas de página (abajo, como en Power BI) */
+.tabs{display:flex;gap:2px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:6px;position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));z-index:6}
+.tabs button{border:1px solid var(--line);border-top:3px solid transparent;background:var(--panel);border-radius:0 0 8px 8px;padding:7px 16px;cursor:pointer;font:700 12px var(--f-d);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-top-color:var(--accent);background:var(--panel-2)}
+.note{color:var(--faint);font-size:12.5px;margin:0}
+
+/* Información sobre herramientas */
+.tip{position:fixed;z-index:50;pointer-events:none;background:#0A1020;border:1px solid #33467F;border-radius:8px;padding:8px 10px;font-size:13px;box-shadow:0 10px 28px rgba(0,0,0,.6);min-width:150px;max-width:260px}
+.tip b{font:700 11px var(--f-d);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px}
+.tip .r{display:flex;justify-content:space-between;gap:14px;font-variant-numeric:tabular-nums}
+.tip .r span:first-child{display:flex;align-items:center;gap:6px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.vis,.kpi{animation:in .35s ease both}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
+</style>
+
+<div class="app">
+  <header class="ribbon">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div><h1>Operaciones de pozos · Activo Andino</h1><small>operaciones_pozos.pbix · ene–sep 2026</small></div>
+    </div>
+    <div class="meta">
+      <span class="tag hot">Ejemplo de Power BI</span>
+      <span class="tag">Datos simulados</span>
+      <span class="tag">Clic en barras y filas para filtrar</span>
+    </div>
+  </header>
+
+  <section class="slicers" aria-label="Segmentadores">
+    <div class="sl"><span class="lb">Campo</span><div class="seg" id="slCampo"></div></div>
+    <div class="sl"><label for="slDesde">Desde</label><select id="slDesde"></select></div>
+    <div class="sl"><label for="slHasta">Hasta</label><select id="slHasta"></select></div>
+    <div class="sl" id="slPozoBox" hidden><span class="lb">Filtro cruzado</span><span class="chip">Pozo <span id="slPozo"></span><button type="button" id="clrPozo" aria-label="Quitar filtro de pozo">✕</button></span></div>
+    <button type="button" class="reset" id="reset">Restablecer filtros</button>
+  </section>
+
+  <main class="canvas" id="canvas"></main>
+
+  <nav class="tabs" role="tablist" aria-label="Páginas del reporte" id="tabs"></nav>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const DATA = /*__DATOS__*/null;
+
+/* ---------- Modelo: índices y formatos ---------- */
+const CAMPOS = ['Aurora','Orión','Vega'];
+const COLOR = {Aurora:'var(--c1)', 'Orión':'var(--c2)', Vega:'var(--c3)'};
+const MESES = DATA.precios.map(p => p.mes);
+const MES_TXT = m => ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][+m.slice(5) - 1];
+const POZO = Object.fromEntries(DATA.pozos.map(p => [p.pozo_id, p]));
+const PRECIO = Object.fromEntries(DATA.precios.map(p => [p.mes, p]));
+const META = Object.fromEntries(DATA.metas.map(m => [m.mes + '|' + m.pozo_id, m.meta_bbl_d]));
+const NF = new Intl.NumberFormat('es-CO');
+const n0 = v => NF.format(Math.round(v));
+const n1 = v => new Intl.NumberFormat('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1}).format(v);
+const pct = v => n1(v * 100) + ' %';
+const usd = v => 'US$ ' + n0(v);
+const mill = v => Math.abs(v) >= 1e6 ? n1(v / 1e6) + ' M' : Math.abs(v) >= 1e3 ? n0(v / 1e3) + ' mil' : n0(v);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- Estado de filtros (lo que harían los segmentadores) ---------- */
+const S = {campos: new Set(CAMPOS), desde: MESES[0], hasta: MESES.at(-1), pozo: null, page: 'resumen'};
+try { const p = localStorage.getItem('pbi_page'); if (p) S.page = p; } catch (e) {}
+
+// Filas del hecho que pasan los filtros. opts permite ignorar un filtro (como ALL / REMOVEFILTERS en DAX)
+function rows(opts = {}) {
+  return DATA.hechos.filter(h => {
+    const p = POZO[h.pozo_id];
+    if (!opts.allCampo && !S.campos.has(p.campo)) return false;
+    if (!opts.allMes && (h.mes < S.desde || h.mes > S.hasta)) return false;
+    if (opts.mes && h.mes !== opts.mes) return false;
+    if (!opts.allPozo && S.pozo && h.pozo_id !== S.pozo) return false;
+    if (opts.campo && p.campo !== opts.campo) return false;
+    if (opts.pozo && h.pozo_id !== opts.pozo) return false;
+    return true;
+  });
+}
+const mesesSel = () => MESES.filter(m => m >= S.desde && m <= S.hasta);
+const sum = (r, k) => r.reduce((a, h) => a + h[k], 0);
+
+/* ---------- Medidas (equivalentes a las medidas DAX de la página Modelo) ---------- */
+const M = {
+  prod: r => sum(r, 'petroleo_bbl'),
+  dias: r => { const ms = new Set(r.map(h => h.mes)); let d = 0; ms.forEach(m => d += r.find(h => h.mes === m).dias_mes); return d; },
+  tasa: r => { const d = M.dias(r); return d ? M.prod(r) / d : 0; },
+  meta: r => r.reduce((a, h) => a + (META[h.mes + '|' + h.pozo_id] || 0) * h.dias_mes, 0),
+  cumpl: r => { const m = M.meta(r); return m ? M.prod(r) / m : 0; },
+  corte: r => { const a = sum(r, 'agua_bbl'), p = M.prod(r); return a + p ? a / (a + p) : 0; },
+  disp: r => { const d = sum(r, 'dias_mes'); return d ? sum(r, 'dias_operativos') / d : 0; },
+  paro: r => sum(r, 'dias_mes') - sum(r, 'dias_operativos'),
+  ing: r => r.reduce((a, h) => a + h.petroleo_bbl * PRECIO[h.mes].precio_realizado_usd, 0),
+  opex: r => sum(r, 'opex_usd'),
+  cpb: r => { const p = M.prod(r); return p ? M.opex(r) / p : 0; },
+  margen: r => M.ing(r) - M.opex(r),
+  margenPct: r => { const i = M.ing(r); return i ? M.margen(r) / i : 0; },
+  precio: r => { const p = M.prod(r); return p ? M.ing(r) / p : 0; },
+};
+const estadoCumpl = v => v >= 1 ? ['good','▲','Sobre el plan'] : v >= .95 ? ['warn','●','Cerca del plan'] : ['crit','▼','Bajo el plan'];
+const estadoCorte = v => v < .35 ? ['good','▲','Normal'] : v < .55 ? ['warn','●','Vigilar'] : ['crit','▼','Alto'];
+
+/* ---------- DAX: texto y resaltado ---------- */
+const DAX = {
+  prod: ['Producción (bbl)', `Producción (bbl) =
+SUM ( Hecho_Produccion[petroleo_bbl] )`, 'Suma los barriles de petróleo de las filas que dejan pasar los filtros.', r => n0(M.prod(r)) + ' bbl'],
+  dias: ['Días del periodo', `Días del periodo =
+SUMX (
+    VALUES ( Calendario[Mes] ),
+    CALCULATE ( MAX ( Hecho_Produccion[dias_mes] ) )
+)`, 'Cuenta los días calendario de los meses visibles. Sirve para convertir barriles a barriles por día.', r => n0(M.dias(r)) + ' días'],
+  tasa: ['Tasa (bbl/d)', `Tasa (bbl/d) =
+DIVIDE ( [Producción (bbl)], [Días del periodo] )`, 'Producción promedio por día calendario. DIVIDE evita el error de dividir entre cero.', r => n0(M.tasa(r)) + ' bbl/d'],
+  meta: ['Plan (bbl)', `Plan (bbl) =
+SUMX (
+    Metas,
+    Metas[meta_bbl_d] * RELATED ( Calendario[DiasMes] )
+)`, 'Convierte la meta diaria de cada pozo y mes en barriles del mes, y los suma.', r => n0(M.meta(r)) + ' bbl'],
+  cumpl: ['Cumplimiento %', `Cumplimiento % =
+DIVIDE ( [Producción (bbl)], [Plan (bbl)] )`, 'Real contra plan. 100 % o más significa que se cumplió la meta.', r => pct(M.cumpl(r))],
+  corte: ['Corte de agua %', `Corte de agua % =
+VAR agua = SUM ( Hecho_Produccion[agua_bbl] )
+VAR petroleo = [Producción (bbl)]
+RETURN DIVIDE ( agua, agua + petroleo )`, 'Qué parte del líquido producido es agua. Si sube, el pozo se agota y el costo crece.', r => pct(M.corte(r))],
+  disp: ['Disponibilidad %', `Disponibilidad % =
+DIVIDE (
+    SUM ( Hecho_Produccion[dias_operativos] ),
+    SUM ( Hecho_Produccion[dias_mes] )
+)`, 'Días que el pozo produjo frente a los días del mes. Los paros por fallas o mantenimiento la bajan.', r => pct(M.disp(r))],
+  ing: ['Ingresos (USD)', `Ingresos (USD) =
+SUMX (
+    Hecho_Produccion,
+    Hecho_Produccion[petroleo_bbl]
+        * RELATED ( Dim_Precio[precio_realizado_usd] )
+)`, 'SUMX recorre fila por fila: barriles de cada mes por el precio de ese mes. RELATED trae el precio de la tabla relacionada.', r => usd(M.ing(r))],
+  opex: ['OPEX (USD)', `OPEX (USD) =
+SUM ( Hecho_Produccion[opex_usd] )`, 'Costo de operación: fijo por pozo, variable por barril, manejo de agua y trabajos especiales.', r => usd(M.opex(r))],
+  cpb: ['Costo por barril', `Costo por barril =
+DIVIDE ( [OPEX (USD)], [Producción (bbl)] )`, 'Cuánto cuesta producir cada barril (lifting cost). Es el KPI que más mira la gerencia.', r => 'US$ ' + n1(M.cpb(r))],
+  margen: ['Margen operativo', `Margen operativo =
+[Ingresos (USD)] - [OPEX (USD)]`, 'Lo que queda después de pagar la operación. Una medida puede usar otras medidas.', r => usd(M.margen(r))],
+  mom: ['Var % vs mes anterior', `Var % vs mes anterior =
+VAR actual = [Producción (bbl)]
+VAR anterior =
+    CALCULATE (
+        [Producción (bbl)],
+        DATEADD ( Calendario[Date], -1, MONTH )
+    )
+RETURN DIVIDE ( actual - anterior, anterior )`, 'Inteligencia de tiempo: CALCULATE cambia el filtro de fecha al mes anterior y compara.', () => { const v = varMes(M.prod); return v == null ? '—' : (v >= 0 ? '+' : '') + pct(v); }],
+  rank: ['Ranking del pozo', `Ranking del pozo =
+RANKX (
+    ALL ( Dim_Pozo[pozo_id] ),
+    [Tasa (bbl/d)]
+)`, 'ALL quita el filtro de pozo para comparar cada pozo contra todos los demás.', () => S.pozo ? '#' + rankPozo(S.pozo) + ' · ' + S.pozo : 'Elige un pozo'],
+};
+function hl(code) {
+  return esc(code)
+    .replace(/(\[[^\]\n]+\])/g, '<span class="m">$1</span>')
+    .replace(/\b(SUM|SUMX|DIVIDE|CALCULATE|VAR|RETURN|RELATED|VALUES|MAX|DATEADD|RANKX|ALL|MONTH)\b/g, '<span class="k">$1</span>')
+    .replace(/(-1|\b\d+\b)(?![^<]*>)/g, '<span class="n">$1</span>');
+}
+function daxBtn(keys) {
+  if (!keys.length) return '';
+  return `<details class="dax"><summary>ƒx DAX</summary><div class="pop">${keys.map(k => `<pre class="code">${hl(DAX[k][1])}</pre><p>${DAX[k][2]}</p>`).join('')}</div></details>`;
+}
+function rankPozo(id) {
+  const t = DATA.pozos.map(p => [p.pozo_id, M.tasa(rows({allPozo: true, allCampo: true, pozo: p.pozo_id}))]).sort((a, b) => b[1] - a[1]);
+  return t.findIndex(x => x[0] === id) + 1;
+}
+function varMes(fn) {
+  const ms = mesesSel(); const last = ms.at(-1); const i = MESES.indexOf(last);
+  if (i < 1) return null;
+  const a = fn(rows({allMes: true, mes: last})), b = fn(rows({allMes: true, mes: MESES[i - 1]}));
+  return b ? (a - b) / b : null;
+}
+
+/* ---------- Información sobre herramientas ---------- */
+const tip = document.getElementById('tip');
+function showTip(e, html) {
+  tip.innerHTML = html; tip.hidden = false;
+  const r = tip.getBoundingClientRect(); let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+const hideTip = () => tip.hidden = true;
+const tr = (k, v, c) => `<div class="r"><span>${c ? `<i class="dot" style="background:${c}"></i>` : ''}${k}</span><span>${v}</span></div>`;
+function bindTips(root) {
+  root.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('pointermove', e => showTip(e, el.dataset.tip));
+    el.addEventListener('pointerleave', hideTip);
+  });
+}
+
+/* ---------- Utilidades de gráficos ---------- */
+function niceMax(v) { const p = Math.pow(10, Math.floor(Math.log10(v || 1))); const f = v / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
+const W = el => Math.max(300, Math.round(el.clientWidth || 600));
+function roundTop(x, y, w, h, r) { r = Math.min(r, w / 2, h); return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`; }
+function roundRight(x, y, w, h, r) { r = Math.min(r, h / 2, w); return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`; }
+
+/* Columnas apiladas por campo + línea de plan */
+function chartStack(el) {
+  const w = W(el), h = 300, m = {l: 54, r: 14, t: 16, b: 30};
+  const ms = mesesSel(), camps = CAMPOS.filter(c => S.campos.has(c));
+  const data = ms.map(mes => {
+    const per = camps.map(c => ({c, v: M.tasa(rows({allMes: true, mes, campo: c}))}));
+    const r = rows({allMes: true, mes});
+    return {mes, per, tot: per.reduce((a, x) => a + x.v, 0), plan: M.meta(r) / (r[0]?.dias_mes || 30), cumpl: M.cumpl(r)};
+  });
+  const ymax = niceMax(Math.max(...data.map(d => Math.max(d.tot, d.plan))) * 1.08);
+  const iw = w - m.l - m.r, ih = h - m.t - m.b, bw = iw / data.length, cw = Math.min(46, bw * .62);
+  const y = v => m.t + ih - v / ymax * ih;
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Tasa diaria por campo y mes frente al plan">`;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s += `<line class="gl" x1="${m.l}" x2="${w - m.r}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`; }
+  s += `<text class="ax-t" x="${m.l}" y="10">bbl/d</text>`;
+  data.forEach((d, i) => {
+    const x = m.l + bw * i + (bw - cw) / 2; let acc = 0;
+    d.per.forEach((p, j) => {
+      if (p.v <= 0) return;
+      const y0 = y(acc), y1 = y(acc + p.v), top = j === d.per.length - 1 || d.per.slice(j + 1).every(q => q.v <= 0);
+      const hh = y0 - y1 - (acc > 0 ? 2 : 0);
+      s += top ? `<path d="${roundTop(x, y1, cw, hh, 4)}" fill="${COLOR[p.c]}"/>` : `<rect x="${x}" y="${y1}" width="${cw}" height="${Math.max(0, hh)}" fill="${COLOR[p.c]}"/>`;
+      acc += p.v;
+    });
+    s += `<text class="ax" x="${x + cw / 2}" y="${h - 10}" text-anchor="middle">${MES_TXT(d.mes)}</text>`;
+  });
+  const pts = data.map((d, i) => [m.l + bw * i + bw / 2, y(d.plan)]);
+  s += `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="var(--plan)" stroke-width="2" stroke-dasharray="5 4"/>`;
+  pts.forEach(p => s += `<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--bg)" stroke="var(--plan)" stroke-width="2"/>`);
+  const lp = pts.at(-1); s += `<text class="lbl" x="${Math.min(lp[0] + 8, w - 30)}" y="${lp[1] - 9}" text-anchor="middle">Plan</text>`;
+  data.forEach((d, i) => {
+    const st = estadoCumpl(d.cumpl);
+    const t = `<b>${MES_TXT(d.mes)} 2026 · clic para filtrar</b>${d.per.map(p => tr(p.c, n0(p.v) + ' bbl/d', COLOR[p.c])).join('')}${tr('Total', n0(d.tot) + ' bbl/d')}${tr('Plan', n0(d.plan) + ' bbl/d')}${tr('Cumplimiento', `<span class="${st[0]}">${st[1]} ${pct(d.cumpl)}</span>`)}`;
+    s += `<rect class="hit" data-mes="${d.mes}" data-tip='${t.replace(/'/g, '&#39;')}' x="${m.l + bw * i}" y="${m.t}" width="${bw}" height="${ih}"/>`;
+  });
+  el.innerHTML = s + '</svg>';
+  bindTips(el);
+  el.querySelectorAll('[data-mes]').forEach(r => r.addEventListener('click', () => { S.desde = S.hasta = r.dataset.mes; hideTip(); render(); }));
+}
+
+/* Barras horizontales: ranking de pozos */
+function chartRank(el) {
+  const w = W(el), rowH = 30, m = {l: 64, r: 92, t: 6, b: 6};
+  const list = DATA.pozos.filter(p => S.campos.has(p.campo)).map(p => {
+    const r = rows({allPozo: true, pozo: p.pozo_id});
+    return {id: p.pozo_id, campo: p.campo, v: M.tasa(r), c: M.cumpl(r), corte: M.corte(r), disp: M.disp(r)};
+  }).filter(d => d.v > 0).sort((a, b) => b.v - a.v);
+  const h = m.t + m.b + list.length * rowH, xmax = niceMax(Math.max(...list.map(d => d.v)));
+  const iw = w - m.l - m.r;
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Ranking de pozos por tasa diaria">`;
+  list.forEach((d, i) => {
+    const y = m.t + i * rowH, bh = 18, bwid = Math.max(2, d.v / xmax * iw), st = estadoCumpl(d.c), off = S.pozo && S.pozo !== d.id;
+    s += `<g class="${off ? 'dim' : ''}"><text class="ax" x="${m.l - 8}" y="${y + 17}" text-anchor="end" style="fill:var(--ink);font-weight:600">${d.id}</text>`;
+    s += `<path d="${roundRight(m.l, y + 3, bwid, bh, 4)}" fill="${COLOR[d.campo]}"/>`;
+    s += `<text class="lbl" x="${m.l + bwid + 6}" y="${y + 17}">${n0(d.v)}</text>`;
+    s += `<text class="ax ${st[0]}" x="${w - 4}" y="${y + 17}" text-anchor="end" style="fill:currentColor">${st[1]} ${Math.round(d.c * 100)} %</text></g>`;
+    const t = `<b>${d.id} · ${d.campo}</b>${tr('Tasa', n0(d.v) + ' bbl/d', COLOR[d.campo])}${tr('Cumplimiento', `<span class="${st[0]}">${st[1]} ${pct(d.c)}</span>`)}${tr('Corte de agua', pct(d.corte))}${tr('Disponibilidad', pct(d.disp))}<div class="r"><span>Clic para filtrar todo el reporte</span></div>`;
+    s += `<rect class="hit" data-pozo="${d.id}" data-tip='${t}' x="0" y="${y}" width="${w}" height="${rowH}"/>`;
+  });
+  el.innerHTML = s + '</svg>';
+  bindTips(el);
+  el.querySelectorAll('[data-pozo]').forEach(r => r.addEventListener('click', () => selPozo(r.dataset.pozo)));
+}
+function selPozo(id) { S.pozo = S.pozo === id ? null : id; hideTip(); render(); }
+
+/* Columnas simples: días de paro */
+function chartParo(el) {
+  const w = W(el), h = 220, m = {l: 40, r: 10, t: 22, b: 28}, ms = mesesSel();
+  const data = ms.map(mes => ({mes, v: M.paro(rows({allMes: true, mes}))}));
+  const ymax = niceMax(Math.max(4, ...data.map(d => d.v)) * 1.15), iw = w - m.l - m.r, ih = h - m.t - m.b, bw = iw / data.length, cw = Math.min(34, bw * .55);
+  const y = v => m.t + ih - v / ymax * ih, top = Math.max(...data.map(d => d.v));
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Días de paro por mes">`;
+  for (let i = 0; i <= 2; i++) { const v = ymax * i / 2; s += `<line class="gl" x1="${m.l}" x2="${w - m.r}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`; }
+  data.forEach((d, i) => {
+    const x = m.l + bw * i + (bw - cw) / 2;
+    if (d.v > 0) s += `<path d="${roundTop(x, y(d.v), cw, y(0) - y(d.v), 4)}" fill="${d.v === top ? 'var(--crit)' : 'var(--faint)'}"/>`;
+    if (d.v === top && top > 0) s += `<text class="lbl" x="${x + cw / 2}" y="${y(d.v) - 6}" text-anchor="middle">${d.v} días</text>`;
+    s += `<text class="ax" x="${x + cw / 2}" y="${h - 9}" text-anchor="middle">${MES_TXT(d.mes)}</text>`;
+    s += `<rect class="hit" data-tip='<b>${MES_TXT(d.mes)} 2026</b>${tr('Días de paro', d.v)}${tr('Disponibilidad', pct(M.disp(rows({allMes: true, mes: d.mes}))))}' x="${m.l + bw * i}" y="${m.t}" width="${bw}" height="${ih}"/>`;
+  });
+  el.innerHTML = s + '</svg>'; bindTips(el);
+}
+
+/* Dispersión: corte de agua vs costo por barril */
+function chartScatter(el) {
+  const w = W(el), h = 320, m = {l: 54, r: 18, t: 18, b: 40};
+  const list = DATA.pozos.filter(p => S.campos.has(p.campo)).map(p => {
+    const r = rows({allPozo: true, pozo: p.pozo_id}); return {id: p.pozo_id, campo: p.campo, x: M.corte(r), y: M.cpb(r), z: M.prod(r)};
+  }).filter(d => d.z > 0);
+  const xmax = Math.min(1, niceMax(Math.max(...list.map(d => d.x)) * 1.1)), ymax = niceMax(Math.max(...list.map(d => d.y)) * 1.1), zmax = Math.max(...list.map(d => d.z));
+  const iw = w - m.l - m.r, ih = h - m.t - m.b, X = v => m.l + v / xmax * iw, Y = v => m.t + ih - v / ymax * ih;
+  const all = rows({allPozo: true}), ax = M.corte(all), ay = M.cpb(all);
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Corte de agua contra costo por barril por pozo">`;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s += `<line class="gl" x1="${m.l}" x2="${w - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${m.l - 8}" y="${Y(v) + 4}" text-anchor="end">${n0(v)}</text>`; }
+  for (let i = 0; i <= 4; i++) { const v = xmax * i / 4; s += `<text class="ax" x="${X(v)}" y="${h - 22}" text-anchor="middle">${Math.round(v * 100)} %</text>`; }
+  s += `<text class="ax-t" x="${m.l}" y="10">US$ por barril</text><text class="ax-t" x="${w - m.r}" y="${h - 4}" text-anchor="end">Corte de agua →</text>`;
+  s += `<line x1="${X(ax)}" x2="${X(ax)}" y1="${m.t}" y2="${m.t + ih}" stroke="var(--faint)" stroke-dasharray="3 4"/><line x1="${m.l}" x2="${w - m.r}" y1="${Y(ay)}" y2="${Y(ay)}" stroke="var(--faint)" stroke-dasharray="3 4"/>`;
+  s += `<text class="ax crit" style="fill:currentColor" x="${w - m.r - 4}" y="${m.t + 12}" text-anchor="end">Mucha agua y caro</text>`;
+  list.sort((a, b) => b.z - a.z).forEach(d => {
+    const r = 6 + 12 * Math.sqrt(d.z / zmax), off = S.pozo && S.pozo !== d.id;
+    s += `<g class="${off ? 'dim' : ''}"><circle cx="${X(d.x)}" cy="${Y(d.y)}" r="${r}" fill="${COLOR[d.campo]}" fill-opacity=".85" stroke="var(--panel)" stroke-width="2"/>`;
+    s += `<text class="ax" style="fill:var(--ink)" x="${X(d.x)}" y="${Y(d.y) - r - 4}" text-anchor="middle">${d.id}</text></g>`;
+    s += `<circle class="hit" data-pozo="${d.id}" cx="${X(d.x)}" cy="${Y(d.y)}" r="${r + 8}" data-tip='<b>${d.id} · ${d.campo}</b>${tr('Corte de agua', pct(d.x), COLOR[d.campo])}${tr('Costo por barril', 'US$ ' + n1(d.y))}${tr('Producción', n0(d.z) + ' bbl')}'/>`;
+  });
+  el.innerHTML = s + '</svg>'; bindTips(el);
+  el.querySelectorAll('[data-pozo]').forEach(r => r.addEventListener('click', () => selPozo(r.dataset.pozo)));
+}
+
+/* Líneas: precio realizado vs costo por barril (misma unidad, un solo eje) */
+function chartPrecio(el) {
+  const w = W(el), h = 280, m = {l: 44, r: 70, t: 16, b: 30}, ms = mesesSel();
+  const data = ms.map(mes => { const r = rows({allMes: true, mes}); return {mes, p: M.precio(r), c: M.cpb(r)}; });
+  const ymax = niceMax(Math.max(...data.map(d => d.p)) * 1.05), iw = w - m.l - m.r, ih = h - m.t - m.b;
+  const X = i => m.l + (data.length < 2 ? iw / 2 : iw * i / (data.length - 1)), Y = v => m.t + ih - v / ymax * ih;
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Precio realizado y costo por barril por mes">`;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s += `<line class="gl" x1="${m.l}" x2="${w - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${n0(v)}</text>`; }
+  s += `<text class="ax-t" x="${m.l}" y="10">US$ por barril</text>`;
+  const area = data.map((d, i) => `${X(i)},${Y(d.p)}`).join(' ') + ' ' + data.map((d, i) => `${X(i)},${Y(d.c)}`).reverse().join(' ');
+  s += `<polygon points="${area}" fill="var(--good)" fill-opacity=".10"/>`;
+  [['p', 'var(--c1)', 'Precio'], ['c', 'var(--c2)', 'Costo']].forEach(([k, col, name]) => {
+    s += `<polyline points="${data.map((d, i) => `${X(i)},${Y(d[k])}`).join(' ')}" fill="none" stroke="${col}" stroke-width="2"/>`;
+    data.forEach((d, i) => s += `<circle cx="${X(i)}" cy="${Y(d[k])}" r="${i === data.length - 1 ? 5 : 3.5}" fill="${col}" stroke="var(--panel)" stroke-width="2"/>`);
+    const L = data.at(-1); s += `<text class="lbl" x="${X(data.length - 1) + 10}" y="${Y(L[k]) + 4}">${name} ${n1(L[k])}</text>`;
+  });
+  const mid = data[Math.floor(data.length / 2)], mi = Math.floor(data.length / 2);
+  if (data.length > 1) s += `<text class="ax good" style="fill:currentColor" x="${X(mi)}" y="${(Y(mid.p) + Y(mid.c)) / 2}" text-anchor="middle">Margen por barril</text>`;
+  data.forEach((d, i) => {
+    s += `<text class="ax" x="${X(i)}" y="${h - 9}" text-anchor="middle">${MES_TXT(d.mes)}</text>`;
+    const bw = data.length < 2 ? iw : iw / (data.length - 1);
+    s += `<rect class="hit" x="${X(i) - bw / 2}" y="${m.t}" width="${bw}" height="${ih}" data-tip='<b>${MES_TXT(d.mes)} 2026</b>${tr('Precio realizado', 'US$ ' + n1(d.p), 'var(--c1)')}${tr('Costo por barril', 'US$ ' + n1(d.c), 'var(--c2)')}${tr('Margen por barril', 'US$ ' + n1(d.p - d.c))}'/>`;
+  });
+  el.innerHTML = s + '</svg>'; bindTips(el);
+}
+
+/* Cascada: de ingresos a margen */
+function chartCascada(el) {
+  const r = rows(), ing = M.ing(r);
+  const steps = [['Ingresos', ing, 'tot'], ['Costo fijo', -sum(r, 'opex_fijo_usd')], ['Variable por barril', -sum(r, 'opex_variable_usd')], ['Manejo de agua', -sum(r, 'opex_agua_usd')]];
+  const wk = sum(r, 'opex_workover_usd'); if (wk) steps.push(['Workover AUR-03', -wk]);
+  steps.push(['Margen', M.margen(r), 'tot']);
+  const w = W(el), h = 280, m = {l: 56, r: 10, t: 22, b: 44}, iw = w - m.l - m.r, ih = h - m.t - m.b, bw = iw / steps.length, cw = Math.min(56, bw * .6);
+  const ymax = niceMax(ing * 1.08), Y = v => m.t + ih - v / ymax * ih;
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Cascada de ingresos a margen">`;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s += `<line class="gl" x1="${m.l}" x2="${w - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${mill(v)}</text>`; }
+  s += `<text class="ax-t" x="${m.l}" y="10">US$</text>`;
+  let run = 0;
+  steps.forEach(([name, v, kind], i) => {
+    const x = m.l + bw * i + (bw - cw) / 2; let a, b, col;
+    if (kind === 'tot') { a = 0; b = v; run = v; col = name === 'Margen' ? 'var(--good)' : 'var(--c1)'; }
+    else { a = run + v; b = run; run = a; col = 'var(--crit)'; }
+    const yTop = Y(Math.max(a, b)), hh = Math.max(2, Math.abs(Y(a) - Y(b)));
+    s += kind === 'tot' ? `<path d="${roundTop(x, yTop, cw, hh, 4)}" fill="${col}"/>` : `<rect x="${x}" y="${yTop}" width="${cw}" height="${hh}" rx="2" fill="${col}" fill-opacity=".85"/>`;
+    s += `<text class="lbl" x="${x + cw / 2}" y="${yTop - 6}" text-anchor="middle">${kind === 'tot' ? '' : '−'}${mill(Math.abs(v))}</text>`;
+    const words = name.split(' '); const l1 = words.slice(0, 2).join(' '), l2 = words.slice(2).join(' ');
+    s += `<text class="ax" x="${x + cw / 2}" y="${h - 26}" text-anchor="middle">${l1}</text>${l2 ? `<text class="ax" x="${x + cw / 2}" y="${h - 12}" text-anchor="middle">${l2}</text>` : ''}`;
+    s += `<rect class="hit" x="${m.l + bw * i}" y="${m.t}" width="${bw}" height="${ih}" data-tip='<b>${name}</b>${tr('Valor', usd(v))}${tr('% de ingresos', pct(Math.abs(v) / ing))}'/>`;
+  });
+  el.innerHTML = s + '</svg>'; bindTips(el);
+}
+
+/* Barras: margen por campo */
+function chartMargenCampo(el) {
+  const list = CAMPOS.filter(c => S.campos.has(c)).map(c => { const r = rows({campo: c}); return {c, v: M.margen(r), p: M.margenPct(r), cpb: M.cpb(r)}; }).filter(d => d.v);
+  const w = W(el), rowH = 46, m = {l: 64, r: 110, t: 4, b: 4}, h = m.t + m.b + rowH * list.length, iw = w - m.l - m.r, xmax = niceMax(Math.max(...list.map(d => d.v)));
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Margen operativo por campo">`;
+  list.forEach((d, i) => {
+    const y = m.t + i * rowH, bwid = Math.max(2, d.v / xmax * iw);
+    s += `<text class="ax" style="fill:var(--ink);font-weight:600" x="${m.l - 8}" y="${y + 27}" text-anchor="end">${d.c}</text>`;
+    s += `<path d="${roundRight(m.l, y + 12, bwid, 22, 4)}" fill="${COLOR[d.c]}"/><text class="lbl" x="${m.l + bwid + 6}" y="${y + 27}">${mill(d.v)}</text>`;
+    s += `<text class="ax" x="${w - 4}" y="${y + 27}" text-anchor="end">${pct(d.p)} margen</text>`;
+    s += `<rect class="hit" x="0" y="${y}" width="${w}" height="${rowH}" data-tip='<b>${d.c}</b>${tr('Margen', usd(d.v), COLOR[d.c])}${tr('Margen %', pct(d.p))}${tr('Costo por barril', 'US$ ' + n1(d.cpb))}'/>`;
+  });
+  el.innerHTML = s + '</svg>'; bindTips(el);
+}
+
+/* Minigráfico para tarjetas */
+function spark(fn) {
+  const ms = mesesSel(); if (ms.length < 2) return '';
+  const vals = ms.map(mes => fn(rows({allMes: true, mes}))), w = 200, h = 34;
+  const lo = Math.min(...vals), hi = Math.max(...vals), sp = hi - lo || 1;
+  const pts = vals.map((v, i) => [i / (vals.length - 1) * (w - 6) + 3, h - 4 - (v - lo) / sp * (h - 10)]);
+  const L = pts.at(-1);
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polygon points="3,${h} ${pts.map(p => p.join(',')).join(' ')} ${L[0]},${h}" fill="var(--c1)" fill-opacity=".14"/><polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="var(--c1)" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${L[0]}" cy="${L[1]}" r="3" fill="var(--accent)"/></svg>`;
+}
+function delta(fn, invert) {
+  const v = varMes(fn); if (v == null || !isFinite(v)) return '<span>Elige 2 o más meses para ver la variación</span>';
+  const good = invert ? v <= 0 : v >= 0;
+  return `<span class="pill ${good ? 'good' : 'crit'}">${v >= 0 ? '▲' : '▼'} ${n1(Math.abs(v * 100))} %</span><span>vs mes anterior</span>`;
+}
+function kpi(title, value, unit, d, sp, extra = '') {
+  return `<div class="kpi"><div class="t">${title}</div><div class="v">${value}<small>${unit}</small></div><div class="d">${d}${extra}</div>${sp}</div>`;
+}
+
+/* ---------- Páginas ---------- */
+function vis(span, title, sub, daxKeys, body, extra = '') {
+  return `<section class="vis ${span}"><div class="vh"><div><h2>${title}</h2>${sub ? `<p>${sub}</p>` : ''}</div>${daxBtn(daxKeys)}</div>${extra}${body}</section>`;
+}
+const legendCampos = (plan) => `<div class="legend">${CAMPOS.filter(c => S.campos.has(c)).map(c => `<span><i class="dot" style="background:${COLOR[c]}"></i>${c}</span>`).join('')}${plan ? '<span><i class="ln"></i>Plan</span>' : ''}</div>`;
+
+function pageResumen() {
+  const r = rows(), c = M.cumpl(r), ec = estadoCumpl(c), wc = M.corte(r), ew = estadoCorte(wc);
+  return `<div class="kpis">
+    ${kpi('Producción', mill(M.prod(r)), 'bbl', delta(M.prod), spark(M.prod))}
+    ${kpi('Tasa promedio', n0(M.tasa(r)), 'bbl/d', delta(M.tasa), spark(M.tasa))}
+    ${kpi('Cumplimiento del plan', n1(c * 100), '%', `<span class="pill ${ec[0]}">${ec[1]} ${ec[2]}</span>`, spark(M.cumpl))}
+    ${kpi('Corte de agua', n1(wc * 100), '%', `<span class="pill ${ew[0]}">${ew[1]} ${ew[2]}</span>`, spark(M.corte))}
+    ${kpi('Costo por barril', n1(M.cpb(r)), 'US$', delta(M.cpb, true), spark(M.cpb))}
+  </div>
+  <div class="row">
+    ${vis('s7', 'Tasa diaria por campo frente al plan', 'Clic en un mes para filtrar el reporte', ['tasa', 'meta', 'cumpl'], '<div class="chart" id="cStack"></div>', legendCampos(true))}
+    ${vis('s5', 'Ranking de pozos', 'Tasa promedio (bbl/d) y cumplimiento · clic para filtro cruzado', ['tasa', 'cumpl', 'rank'], '<div class="chart" id="cRank"></div>', legendCampos(false))}
+  </div>
+  <div class="row">
+    ${vis('s7', 'Hallazgos clave', 'Narrativa que se recalcula con cada filtro', ['prod', 'cumpl', 'corte', 'disp'], `<ul class="story">${hallazgos()}</ul>`)}
+    ${vis('s5', 'Días de paro por mes', 'Días sin producir sumando todos los pozos', ['disp'], '<div class="chart" id="cParo"></div>')}
+  </div>`;
+}
+
+function hallazgos() {
+  const out = [], r = rows(), tot = M.prod(r);
+  if (!tot) return '<li><span class="ic warn">!</span><span>No hay datos con estos filtros.</span></li>';
+  const camps = CAMPOS.filter(c => S.campos.has(c)).map(c => ({c, p: M.prod(rows({campo: c})), k: M.cumpl(rows({campo: c})), w: M.corte(rows({campo: c})), cpb: M.cpb(rows({campo: c}))})).filter(x => x.p);
+  const top = [...camps].sort((a, b) => b.p - a.p)[0];
+  if (!S.pozo && camps.length > 1) out.push(['good', '▲', `<b>${top.c}</b> aporta el <b>${pct(top.p / tot)}</b> de la producción del periodo.`]);
+  const peor = [...camps].sort((a, b) => a.k - b.k)[0];
+  if (!S.pozo && peor && peor.k < .97) out.push(['crit', '▼', `<b>${peor.c}</b> va al <b>${pct(peor.k)}</b> del plan, con corte de agua de <b>${pct(peor.w)}</b> y costo de <b>US$ ${n1(peor.cpb)}</b> por barril.`]);
+  const ms = mesesSel(), paros = ms.map(mes => [mes, M.paro(rows({allMes: true, mes}))]).sort((a, b) => b[1] - a[1]);
+  if (paros[0] && paros[0][1] >= 15) out.push(['warn', '●', `<b>${MES_TXT(paros[0][0])}</b> tuvo <b>${paros[0][1]} días de paro</b>, el peor mes. ${paros[0][0] === '2026-07' && S.campos.has('Orión') ? 'Coincide con el mantenimiento mayor de la estación de Orión.' : ''}`]);
+  if ((!S.pozo || S.pozo === 'AUR-03') && S.campos.has('Aurora') && S.desde <= '2026-03' && S.hasta >= '2026-05') {
+    const a = M.tasa(rows({allMes: true, allPozo: true, pozo: 'AUR-03', mes: '2026-03'})), b = M.tasa(rows({allMes: true, allPozo: true, pozo: 'AUR-03', mes: '2026-05'}));
+    out.push(['good', '▲', `El <b>workover de AUR-03</b> en abril subió su tasa de <b>${n0(a)}</b> a <b>${n0(b)} bbl/d</b> (${b > a ? '+' : ''}${pct((b - a) / a)}).`]);
+  }
+  const pz = DATA.pozos.filter(p => S.campos.has(p.campo)).map(p => ({id: p.pozo_id, k: M.cumpl(rows({allPozo: true, pozo: p.pozo_id}))})).filter(x => x.k).sort((a, b) => a.k - b.k);
+  if (!S.pozo && pz[0]) out.push(['crit', '!', `Prioridad de intervención: <b>${pz[0].id}</b> (${pct(pz[0].k)} del plan) y <b>${pz[1] ? pz[1].id : ''}</b>${pz[1] ? ` (${pct(pz[1].k)})` : ''}.`]);
+  if (S.pozo) { const pr = rows(); out.push(['good', '#', `<b>${S.pozo}</b> es el pozo <b>#${rankPozo(S.pozo)}</b> de 12 por tasa. Disponibilidad <b>${pct(M.disp(pr))}</b>, costo <b>US$ ${n1(M.cpb(pr))}</b>/bbl.`]); }
+  return out.map(([c, i, t]) => `<li><span class="ic ${c}">${i}</span><span>${t}</span></li>`).join('');
+}
+
+function pagePozos() {
+  return `<div class="row">${vis('s12', 'Matriz de pozos por mes', 'Tasa (bbl/d) con formato condicional · clic en una fila para filtrar', ['tasa', 'corte', 'disp', 'cumpl'], `<div class="tbl-wrap">${matriz()}</div>`)}</div>
+  <div class="row">
+    ${vis('s7', 'Corte de agua contra costo por barril', 'Cada burbuja es un pozo; su tamaño es la producción', ['corte', 'cpb', 'prod'], '<div class="chart" id="cScatter"></div>', legendCampos(false))}
+    ${vis('s5', 'Cómo leer esta página', '', ['rank'], `<ul class="story">
+      <li><span class="ic good">1</span><span>La <b>matriz</b> es el visual más usado en Power BI: filas (pozos), columnas (meses) y valores (una medida). El azul más intenso marca la tasa más alta.</span></li>
+      <li><span class="ic warn">2</span><span>Las filas grises son <b>subtotales por campo</b>. Power BI los calcula solos con la misma medida.</span></li>
+      <li><span class="ic crit">3</span><span>En la <b>dispersión</b>, los pozos arriba a la derecha producen mucha agua y cuestan más: son candidatos a reparación o cierre.</span></li>
+      <li><span class="ic good">4</span><span>Al hacer clic en un pozo, <b>todas las páginas</b> se filtran. Eso es el <b>filtro cruzado</b>.</span></li></ul>`)}
+  </div>`;
+}
+function matriz() {
+  const ms = mesesSel(), camps = CAMPOS.filter(c => S.campos.has(c));
+  const vmax = Math.max(...DATA.pozos.flatMap(p => ms.map(mes => M.tasa(rows({allMes: true, allPozo: true, mes, pozo: p.pozo_id}))))), dmax = 1;
+  const heat = v => v ? `background-color:rgba(61,139,255,${(.08 + .62 * v / vmax).toFixed(2)})` : '';
+  const cells = (rf, bold) => {
+    const r = rf(); const c = M.cumpl(r), st = estadoCumpl(c), wc = M.corte(r);
+    return ms.map(mes => { const v = M.tasa(rf(mes)); return `<td style="${bold ? '' : heat(v)}">${v ? n0(v) : '—'}</td>`; }).join('') +
+      `<td>${n0(M.prod(r))}</td><td><span class="bar-cell">${pct(wc)}<i style="width:${Math.round(wc / dmax * 46)}px"></i></span></td><td>${pct(M.disp(r))}</td><td class="${st[0]}">${st[1]} ${pct(c)}</td>`;
+  };
+  let h = `<table class="mx"><thead><tr><th>Campo / pozo</th>${ms.map(m => `<th>${MES_TXT(m)}</th>`).join('')}<th>Total bbl</th><th>Corte agua</th><th>Disponib.</th><th>Cumplim.</th></tr></thead><tbody>`;
+  camps.forEach(c => {
+    h += `<tr class="grp"><td>${c}</td>${cells(mes => rows({allPozo: true, campo: c, ...(mes ? {allMes: true, mes} : {})}), true)}</tr>`;
+    DATA.pozos.filter(p => p.campo === c).forEach(p => {
+      h += `<tr class="pz${S.pozo === p.pozo_id ? ' sel' : ''}" data-pozo="${p.pozo_id}" tabindex="0"><td>&nbsp;&nbsp;<i class="dot" style="background:${COLOR[c]}"></i> ${p.pozo_id}</td>${cells(mes => rows({allPozo: true, pozo: p.pozo_id, ...(mes ? {allMes: true, mes} : {})}))}</tr>`;
+    });
+  });
+  h += `<tr class="tot"><td>Total</td>${cells(mes => rows({allPozo: true, ...(mes ? {allMes: true, mes} : {})}), true)}</tr></tbody></table>`;
+  return h;
+}
+
+function pageEconomia() {
+  const r = rows(), mp = M.margenPct(r);
+  return `<div class="kpis">
+    ${kpi('Ingresos', mill(M.ing(r)), 'US$', delta(M.ing), spark(M.ing))}
+    ${kpi('OPEX', mill(M.opex(r)), 'US$', delta(M.opex, true), spark(M.opex))}
+    ${kpi('Margen operativo', mill(M.margen(r)), 'US$', delta(M.margen), spark(M.margen))}
+    ${kpi('Margen %', n1(mp * 100), '%', `<span class="pill ${mp > .8 ? 'good' : mp > .7 ? 'warn' : 'crit'}">${mp > .8 ? '▲ Saludable' : mp > .7 ? '● Vigilar' : '▼ Bajo'}</span>`, spark(M.margenPct))}
+  </div>
+  <div class="row">
+    ${vis('s7', 'Precio realizado contra costo por barril', 'La franja verde es lo que gana cada barril', ['ing', 'cpb'], '<div class="chart" id="cPrecio"></div>', '<div class="legend"><span><i class="dot" style="background:var(--c1)"></i>Precio realizado (Brent − 4,5)</span><span><i class="dot" style="background:var(--c2)"></i>Costo por barril</span></div>')}
+    ${vis('s5', 'Margen por campo', 'Margen operativo y % sobre ingresos', ['margen', 'ing', 'opex'], '<div class="chart" id="cMargen"></div>')}
+  </div>
+  <div class="row">${vis('s12', 'De ingresos a margen', 'Gráfico de cascada: cada barra roja es un costo que se resta', ['ing', 'opex', 'margen'], '<div class="chart" id="cCascada"></div>')}</div>`;
+}
+
+function pageModelo() {
+  const r = rows();
+  return `<div class="row">${vis('s12', 'Modelo de datos en estrella', 'Así se ven las tablas en la vista Modelo de Power BI Desktop', [], `<div class="tbl-wrap model">${modelo()}</div><p class="note">1 = lado "uno" (tabla de dimensión, valores únicos) · * = lado "muchos" (tabla de hechos). Los filtros fluyen de la dimensión hacia los hechos.</p>`)}</div>
+  <div class="vis"><div class="vh"><div><h2>Medidas DAX del reporte</h2><p>El valor amarillo se recalcula con los filtros actuales, igual que en Power BI</p></div></div>
+  <div class="measures">${Object.keys(DAX).map(k => `<article class="ms"><header><h3>${DAX[k][0]}</h3><span class="now">${DAX[k][3](r)}</span></header><pre class="code">${hl(DAX[k][1])}</pre><p>${DAX[k][2]}</p></article>`).join('')}</div></div>
+  <div class="row">${vis('s12', 'Cómo construirlo tú en Power BI Desktop', 'Los datos y las medidas están en tu GitHub', [], `<ol class="steps">
+    <li><b>Obtener datos → Texto o CSV</b>: carga <code>hecho_produccion.csv</code>, <code>dim_pozo.csv</code>, <code>dim_precio.csv</code> y <code>metas.csv</code>.</li>
+    <li>En <b>Power Query</b>, revisa los tipos: <code>mes</code> como fecha (primer día del mes), números como número entero o decimal.</li>
+    <li>Crea la tabla <b>Calendario</b> con <code>Calendario = ADDCOLUMNS(CALENDAR(DATE(2026,1,1), DATE(2026,9,30)), "Mes", STARTOFMONTH([Date]), "DiasMes", DAY(EOMONTH([Date],0)))</code> y márcala como tabla de fechas.</li>
+    <li>En la vista <b>Modelo</b>, arrastra las relaciones como en el diagrama: <code>pozo_id</code> y <code>mes</code>.</li>
+    <li>Crea las medidas de esta página con <b>Nueva medida</b>, en el mismo orden: primero las básicas y luego las que usan otras medidas.</li>
+    <li>Arma los visuales: tarjetas, columnas apiladas, barras, matriz, dispersión, líneas y cascada. Agrega segmentadores de <b>campo</b> y <b>mes</b>.</li>
+    <li>Aplica el tema <code>tema_galactico.json</code> (Vista → Temas → Buscar temas) y guarda <code>operaciones_pozos.pbix</code> en tu repositorio.</li>
+  </ol>`)}</div>`;
+}
+function modelo() {
+  const T = (x, y, name, fields, hx) => {
+    const h = 30 + fields.length * 19;
+    return `<g class="tb"><rect x="${x}" y="${y}" width="200" height="${h}" rx="8" fill="var(--panel-2)" stroke="${hx || 'var(--line)'}" stroke-width="1.5"/><rect class="h" x="${x}" y="${y}" width="200" height="26" rx="8"/><text class="mtt" x="${x + 12}" y="${y + 18}">${name}</text>${fields.map((f, i) => `<text class="mfd" x="${x + 12}" y="${y + 44 + i * 19}">${f}</text>`).join('')}</g>`;
+  };
+  const L = (x1, y1, x2, y2, a, b) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--muted)" stroke-width="1.5"/><text class="mtxt" x="${x1 + (x2 > x1 ? 8 : -16)}" y="${y1 - 6}">${a}</text><text class="mtxt" x="${x2 + (x2 > x1 ? -16 : 8)}" y="${y2 - 6}">${b}</text>`;
+  return `<svg viewBox="0 0 860 330" role="img" aria-label="Modelo estrella: Hecho_Produccion al centro con Dim_Pozo, Dim_Precio, Metas y Calendario">
+    ${L(230, 80, 330, 120, '1', '*')}${L(230, 250, 330, 220, '1', '*')}${L(630, 120, 530, 140, '1', '*')}${L(630, 250, 530, 220, '*', '1')}
+    ${T(30, 20, 'Dim_Pozo', ['🔑 pozo_id', 'campo', 'tipo', 'inicio'])}
+    ${T(30, 200, 'Calendario', ['🔑 Date', 'Mes', 'DiasMes'])}
+    ${T(330, 60, 'Hecho_Produccion', ['mes', 'pozo_id', 'dias_operativos', 'petroleo_bbl', 'agua_bbl', 'gas_mmscf', 'opex_usd', '…'], 'var(--accent)')}
+    ${T(630, 60, 'Dim_Precio', ['🔑 mes', 'brent_usd', 'precio_realizado_usd'])}
+    ${T(630, 220, 'Metas', ['mes', 'pozo_id', 'meta_bbl_d'])}
+  </svg>`;
+}
+
+/* ---------- Render ---------- */
+const PAGES = [['resumen', 'Resumen', pageResumen], ['pozos', 'Pozos', pagePozos], ['economia', 'Economía', pageEconomia], ['modelo', 'Modelo y DAX', pageModelo]];
+function renderSlicers() {
+  document.getElementById('slCampo').innerHTML = CAMPOS.map(c => `<button type="button" data-c="${c}" aria-pressed="${S.campos.has(c)}"><i class="dot" style="background:${COLOR[c]}"></i>${c}</button>`).join('');
+  document.getElementById('slDesde').value = S.desde; document.getElementById('slHasta').value = S.hasta;
+  document.getElementById('slPozoBox').hidden = !S.pozo; document.getElementById('slPozo').textContent = S.pozo || '';
+  document.getElementById('tabs').innerHTML = PAGES.map(([id, name]) => `<button type="button" role="tab" data-p="${id}" aria-selected="${S.page === id}">${name}</button>`).join('');
+}
+function render() {
+  if (S.pozo && !S.campos.has(POZO[S.pozo].campo)) S.pozo = null;
+  renderSlicers();
+  const pg = PAGES.find(p => p[0] === S.page) || PAGES[0];
+  const cv = document.getElementById('canvas'); cv.innerHTML = `<div class="page">${pg[2]()}</div>`;
+  const draw = {cStack: chartStack, cRank: chartRank, cParo: chartParo, cScatter: chartScatter, cPrecio: chartPrecio, cCascada: chartCascada, cMargen: chartMargenCampo};
+  Object.entries(draw).forEach(([id, fn]) => { const el = document.getElementById(id); if (el) fn(el); });
+  cv.querySelectorAll('tr[data-pozo]').forEach(t => { t.addEventListener('click', () => selPozo(t.dataset.pozo)); t.addEventListener('keydown', e => { if (e.key === 'Enter') selPozo(t.dataset.pozo); }); });
+  cv.querySelectorAll('details.dax').forEach(d => d.addEventListener('toggle', () => { if (d.open) cv.querySelectorAll('details.dax[open]').forEach(o => o !== d && (o.open = false)); }));
+}
+
+['slDesde', 'slHasta'].forEach(id => {
+  document.getElementById(id).innerHTML = MESES.map(m => `<option value="${m}">${MES_TXT(m)} 2026</option>`).join('');
+  document.getElementById(id).addEventListener('change', e => {
+    if (id === 'slDesde') { S.desde = e.target.value; if (S.hasta < S.desde) S.hasta = S.desde; }
+    else { S.hasta = e.target.value; if (S.desde > S.hasta) S.desde = S.hasta; }
+    render();
+  });
+});
+document.getElementById('slCampo').addEventListener('click', e => {
+  const b = e.target.closest('button[data-c]'); if (!b) return;
+  const c = b.dataset.c;
+  if (S.campos.has(c) && S.campos.size === 1) S.campos = new Set(CAMPOS);
+  else if (S.campos.size === CAMPOS.length) S.campos = new Set([c]);
+  else S.campos.has(c) ? S.campos.delete(c) : S.campos.add(c);
+  render();
+});
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button[data-p]'); if (!b) return;
+  S.page = b.dataset.p; try { localStorage.setItem('pbi_page', S.page); } catch (er) {}
+  render(); scrollTo({top: 0});
+});
+document.getElementById('clrPozo').addEventListener('click', () => { S.pozo = null; render(); });
+document.getElementById('reset').addEventListener('click', () => { S.campos = new Set(CAMPOS); S.desde = MESES[0]; S.hasta = MESES.at(-1); S.pozo = null; render(); });
+document.addEventListener('click', e => { if (!e.target.closest('details.dax')) document.querySelectorAll('details.dax[open]').forEach(d => d.open = false); });
+let rz, lastW = 0;
+new ResizeObserver(([e]) => {
+  const w = Math.round(e.contentRect.width); if (w === lastW) return; lastW = w;
+  clearTimeout(rz); rz = setTimeout(render, 120);
+}).observe(document.getElementById('canvas'));
+render();
+</script>
